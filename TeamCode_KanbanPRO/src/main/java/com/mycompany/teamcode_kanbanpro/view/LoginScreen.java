@@ -5,8 +5,7 @@ package com.mycompany.teamcode_kanbanpro.view;
  *
  * @author diana
  */
-import javax.swing.*;
-import java.awt.*;
+
 
 import java.awt.Color;
 import java.awt.Font;
@@ -23,6 +22,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 public class LoginScreen extends JFrame {
+    public JButton loginButton;
+    public JTextField userField;
+    public JPasswordField passField;
 
     public LoginScreen() {
         setTitle("Iniciar Sesión - KanbanPro");
@@ -37,7 +39,7 @@ public class LoginScreen extends JFrame {
         gbc.insets = new Insets(5, 5, 5, 5); // Espaciado entre componentes
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Título
+        // Titulo
         JLabel titleLabel = new JLabel("Bienvenido al Sistema Kanban", SwingConstants.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
@@ -46,8 +48,8 @@ public class LoginScreen extends JFrame {
         panel.add(titleLabel, gbc);
 
         // Campos de entrada
-        JTextField userField = new JTextField(15);
-        JPasswordField passField = new JPasswordField(15);
+        userField = new JTextField(15);
+        passField = new JPasswordField(15);
 
         // Etiqueta de Usuario
         gbc.gridx = 0;
@@ -70,8 +72,8 @@ public class LoginScreen extends JFrame {
         gbc.gridy = 2;
         panel.add(passField, gbc);
 
-        // Botón
-        JButton loginButton = new JButton("Iniciar Sesión");
+        // Boton
+        loginButton = new JButton("Iniciar Sesión");
         loginButton.setBackground(new Color(66, 133, 244)); 
         loginButton.setForeground(Color.WHITE);
         loginButton.setFocusPainted(false);
@@ -79,13 +81,6 @@ public class LoginScreen extends JFrame {
         gbc.gridy = 3;
         gbc.gridwidth = 2;
         panel.add(loginButton, gbc);
-
-        // Acción del botón 
-        loginButton.addActionListener(e -> {
-            
-            this.dispose(); // Cerramos la ventana de login
-            new KanbanBoardScreen().setVisible(true); // Abre la pizarra kanban
-        });
 
         add(panel);
     }
