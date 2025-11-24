@@ -5,28 +5,23 @@ import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.swing.JOptionPane;
-
 import com.mycompany.teamcode_kanbanpro.view.KanbanBoardScreen;
 import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
-
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
+import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
 /**
  *
  * @author Emanuel
  */
 public class AuthController {
     LoginScreen loginView;
+    RegisterUserView registerView;
     private String host;
     private int port;
 
-    public AuthController(LoginScreen ls){
+    public AuthController(LoginScreen ls, RegisterUserView ru){
         this.loginView = ls;
+        this.registerView = ru;
         this.host = "localhost";
         this.port = 3001;
         initialize();
@@ -34,6 +29,7 @@ public class AuthController {
 
     private void initialize() {
         this.loginView.loginButton.addActionListener(e -> {authenticateUser();});
+        this.loginView.registerButton.addActionListener(e -> new RegisterUserController(this.registerView));
     }
 
     private void authenticateUser(){
@@ -50,7 +46,7 @@ public class AuthController {
             Response resp = conn.sendRequest(req);
             if (resp.isSuccess()) {
                 System.out.println("Autenticación exitosa: " + resp.getMessage());
-                loginView.dispose(); // Cerramos la ventana de login
+                loginView.dispose();
                 new KanbanBoardScreen().setVisible(true);
             } else {
                 System.out.println("Error en la autenticacion: " + resp.getMessage());

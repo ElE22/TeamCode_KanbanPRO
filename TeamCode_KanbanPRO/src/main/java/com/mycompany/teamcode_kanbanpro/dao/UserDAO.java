@@ -26,12 +26,7 @@ public class UserDAO {
     private static final String UPDATE_USER_SQL = "UPDATE usuario SET id_rol = ?, usuario = ?, nombre = ?, email = ?, activo = ? WHERE id_usuario = ?";
     private static final String DELETE_USER_SQL = "DELETE FROM usuario WHERE id_usuario = ?";
 
-    /**
-     * Mapea un ResultSet a un objeto User.
-     * @param rs El ResultSet de la consulta.
-     * @return Objeto User.
-     * @throws SQLException Si ocurre un error al acceder a los datos del ResultSet.
-     */
+    //Mapea un ResultSet a un objeto User.
     private User mapRowToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setIdUsuario(rs.getInt("id_usuario"));
@@ -45,7 +40,6 @@ public class UserDAO {
         return user;
     }
 
-    // --- Métodos CRUD ---
 
     //Inserta un nuevo usuario en la base de datos y donde obetenemos el id del usuario creado
     public boolean insertUser(User user) {
@@ -131,7 +125,7 @@ public class UserDAO {
              PreparedStatement preparedStatement = connection.prepareStatement(DELETE_USER_SQL)) {
             
             preparedStatement.setInt(1, idUsuario);
-            rowDeleted = preparedStatement.executeUpdate() > 0; //aqui es donde  retorna true si la eliminación fue exitosa, false en caso contrario.
+            rowDeleted = preparedStatement.executeUpdate() > 0; 
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -7,15 +7,16 @@ import javax.swing.JOptionPane;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class Server {
+public class Server implements AutoCloseable {
     private static final int PORT = 3001;
+    private static ServerSocket serverSocketClose;
      public static void main(String[] args) {
         ExecutorService threadPool = Executors.newCachedThreadPool();
-        try(ServerSocket server = new ServerSocket(PORT)){
-
+        try(ServerSocket serverSocket = new ServerSocket(PORT)){
+            serverSocketClose = serverSocket;
             System.out.println("Servidor iniciado en el puerto " + PORT);
             while (true) {
-                Socket clientSocket = server.accept();
+                Socket clientSocket = serverSocket.accept();
                 threadPool.submit(new ClientHandler(clientSocket));
             }
         } catch (Exception e) {
@@ -27,4 +28,9 @@ public class Server {
         }
 
     }
+	 @Override
+	 public void close() throws Exception {
+          serverSocketClose.close();
+		
+	 }
 }

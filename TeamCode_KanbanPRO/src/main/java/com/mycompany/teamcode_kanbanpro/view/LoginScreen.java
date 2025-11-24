@@ -1,11 +1,9 @@
-
 package com.mycompany.teamcode_kanbanpro.view;
 
 /**
  *
  * @author diana
  */
-
 
 import java.awt.Color;
 import java.awt.Font;
@@ -23,6 +21,7 @@ import javax.swing.SwingConstants;
 
 public class LoginScreen extends JFrame {
     public JButton loginButton;
+    public JButton registerButton;
     public JTextField userField;
     public JPasswordField passField;
 
@@ -36,7 +35,7 @@ public class LoginScreen extends JFrame {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5); // Espaciado entre componentes
+        gbc.insets = new Insets(5, 5, 5, 5); 
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Titulo
@@ -62,7 +61,7 @@ public class LoginScreen extends JFrame {
         gbc.gridy = 1;
         panel.add(userField, gbc);
 
-        // Etiqueta de Contraseña
+        // Etiqueta de clave
         gbc.gridx = 0;
         gbc.gridy = 2;
         panel.add(new JLabel("Contraseña:"), gbc);
@@ -81,7 +80,16 @@ public class LoginScreen extends JFrame {
         gbc.gridy = 3;
         gbc.gridwidth = 2;
         panel.add(loginButton, gbc);
-
+        
+        //Boton registrar
+        registerButton = new JButton("Registrarse");
+        registerButton.setBackground(new Color(34, 163, 63)); 
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setFocusPainted(false);
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        panel.add(registerButton, gbc);
         add(panel);
     }
 }
