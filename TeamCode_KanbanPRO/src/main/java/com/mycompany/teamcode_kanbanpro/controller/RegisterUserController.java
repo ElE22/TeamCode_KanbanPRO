@@ -51,10 +51,10 @@ public class RegisterUserController {
             view.getBtnRegister().setEnabled(false);
         }
         this.view.setDefaultCloseOperation(RegisterUserView.DISPOSE_ON_CLOSE);
-        this.view.setVisible(true);
-
+        
         //cargar roles
         loadRolesFromServer();
+        this.view.setVisible(true);
 
         // Eventos
         attachListeners();
@@ -75,7 +75,7 @@ public class RegisterUserController {
             return;
         }
         try {
-            //olicitud para obtener roles
+            //solicitud para obtener roles
             Request req = new Request();
             req.setAction("getRoles");
             
@@ -112,9 +112,8 @@ public class RegisterUserController {
 
     // validacion de clave
     private PasswordStrength checkPasswordStrength(String password) {
-         System.out.println("HIGH " + HIGH_STRENGTH.matcher(password).matches());
-         System.out.println("MEDIUM " + MEDIUM_STRENGTH.matcher(password).matches());
-         if (HIGH_STRENGTH.matcher(password).matches()) {
+        
+        if (HIGH_STRENGTH.matcher(password).matches()) {
             return PasswordStrength.ALTA;
         }
         else if (MEDIUM_STRENGTH.matcher(password).matches()) {

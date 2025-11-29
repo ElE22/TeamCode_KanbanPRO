@@ -62,7 +62,7 @@ public class RegisterUserView extends JFrame {
         mainPanel.add(new JLabel("Contraseña:"));
         mainPanel.add(txtPassword);
 
-        // q tan fuerte es la claev 
+        // q tan fuerte es la clave 
         mainPanel.add(new JLabel(""));
         mainPanel.add(lblPasswordStrength);
 
