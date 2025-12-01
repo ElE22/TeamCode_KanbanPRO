@@ -14,8 +14,11 @@ C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamC
 C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\TeamCode_KanbanPRO.java
 C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\util\BCryptUtil.java
 C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\util\DBUtil.java
-C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\DashboardView.java
+C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\CrearSprintView.java
+C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\CrearTareaView.java
 C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\KanbanBoardScreen.java
 C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\LoginScreen.java
 C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\PantallaPrincipal.java
+C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\ProyectosView.java
 C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\RegisterUserView.java
+C:\Users\salaz\OneDrive - Universidad Fidélitas\gitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\SprintsView.java

@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 import com.mycompany.teamcode_kanbanpro.view.KanbanBoardScreen;
 import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
+import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
 /**
  *
@@ -47,7 +48,8 @@ public class AuthController {
             if (resp.isSuccess()) {
                 System.out.println("Autenticación exitosa: " + resp.getMessage());
                 loginView.dispose();
-                new KanbanBoardScreen().setVisible(true);
+                //new KanbanBoardScreen().setVisible(true);
+                new PantallaPrincipal().setVisible(true);
             } else {
                 System.out.println("Error en la autenticacion: " + resp.getMessage());
                 JOptionPane.showMessageDialog(loginView, "Error de autenticación: " + resp.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
