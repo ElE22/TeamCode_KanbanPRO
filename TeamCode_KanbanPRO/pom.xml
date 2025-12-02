@@ -19,11 +19,6 @@
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-<<<<<<< HEAD
-=======
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
->>>>>>> b0639b35e5c95bc5a7c8a7c5948993f229e9a9ae
         <maven.compiler.release>21</maven.compiler.release>
         <exec.mainClass>com.mycompany.teamcode_kanbanpro.TeamCode_KanbanPRO</exec.mainClass>
     </properties>
