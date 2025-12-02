@@ -70,7 +70,6 @@ public class ClientHandler implements Runnable {
     private Response handleRequest(Request req) {
         String action = req.getAction();
        
-        System.out.println("At: "+action.toLowerCase());
         switch (action.toLowerCase()) {
             case "login":
                 // return loginHandler.handleLogin(req); // version a futuro esto no se puede quedar local
@@ -93,7 +92,6 @@ public class ClientHandler implements Runnable {
 
             String credencial = (String) p.get("usaurio");
             String clavePlain = (String) p.get("clave");
-            System.out.println("User" + credencial + " clave" + clavePlain + "p" + p);
             if (credencial == null || clavePlain == null) {
                 return new Response(false, "Faltan credenciales de acceso.");
             }
@@ -112,7 +110,7 @@ public class ClientHandler implements Runnable {
 
             //Se verificamos si las claves son las mismas textoplano vs Hash
             boolean ok = BCryptUtil.checkPwd(clavePlain, u.getPassword());
-            System.out.println("ok  :" + ok);
+            
             if (ok) {
                 Response r = new Response(true, "Login correcto.");
 
