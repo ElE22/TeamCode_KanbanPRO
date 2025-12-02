@@ -21,6 +21,7 @@ public class RoleDAO {
     private static final String SELECT_ALL_ROLES = "SELECT id_rol, nombre, descripcion FROM rol";
     private static final String SELECT_ROLE_ID_BY_NAME = "SELECT id_rol FROM rol WHERE nombre = ?";
     private static final String SELECT_ALL_ROLE_NAMES = "SELECT nombre FROM rol ORDER BY nombre";
+    private  static final String SELECT_ROLE_BY_ID = "SELECT id_rol, nombre, descripcion FROM rol WHERE id_rol = ?";
 
 
     private Role RowToRole(ResultSet rs) throws SQLException {
@@ -80,5 +81,24 @@ public class RoleDAO {
             e.printStackTrace();
         }
         return idRol;
+    }
+
+    //Obtiene un rol por su ID
+    public Role getRoleById(int roleId) {    
+        Role role = null;
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ROLE_BY_ID)) {
+            
+            preparedStatement.setInt(1, roleId);
+            
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                if (rs.next()) {
+                    role = RowToRole(rs);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return role;
     }
 }

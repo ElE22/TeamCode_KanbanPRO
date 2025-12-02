@@ -14,10 +14,7 @@ public class TeamCode_KanbanPRO {
 
    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            LoginScreen LS = new LoginScreen();
-            RegisterUserView RU = new RegisterUserView();
-            new AuthController(LS, RU);
-            LS.setVisible(true);
+            new AuthController();
         });
     }
 }

@@ -21,7 +21,7 @@ public class User implements Serializable {
     private String password;
     private boolean activo;
     private Timestamp creadoEn;
-
+    private String rolNombre;
     public User() {
     }
     
@@ -42,6 +42,16 @@ public class User implements Serializable {
         this.nombre = nombre;
         this.email = email;
         this.password = password;
+        this.activo = activo;
+        this.creadoEn = creadoEn;
+    }
+    
+    public User(int idUsuario, int idRol, String usuario, String nombre, String email, boolean activo, Timestamp creadoEn) {
+        this.idUsuario = idUsuario;
+        this.idRol = idRol;
+        this.usuario = usuario;
+        this.nombre = nombre;
+        this.email = email;
         this.activo = activo;
         this.creadoEn = creadoEn;
     }
@@ -108,6 +118,12 @@ public class User implements Serializable {
 
     public void setCreadoEn(Timestamp creadoEn) {
         this.creadoEn = creadoEn;
+    }
+    public String getRolNombre() {
+        return rolNombre;
+    }
+    public void setRolNombre(String rolNombre) {
+        this.rolNombre = rolNombre;
     }
 
     

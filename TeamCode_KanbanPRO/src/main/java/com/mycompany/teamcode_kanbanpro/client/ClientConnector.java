@@ -12,6 +12,8 @@ public class ClientConnector implements AutoCloseable {
     private Socket socket;
     private ObjectOutputStream out;
     private ObjectInputStream in;
+    private Integer UserID;
+    private String userRole;
 
     public ClientConnector(String host, int port) throws Exception {
         socket = new Socket(host, port);
@@ -24,6 +26,22 @@ public class ClientConnector implements AutoCloseable {
         Object resp = in.readObject();
         if (resp instanceof Response) return (Response) resp;
         throw new IllegalStateException("Respuesta inesperada del servidor");
+    }
+
+    public String getUserRole() {
+        return userRole;
+    }
+
+    public Integer getUserID() {
+        return UserID;
+    }
+
+    public void setUserID(Integer UserID) {
+        this.UserID = UserID;
+    }
+
+    public void setUserRole(String userRole) {
+        this.userRole = userRole;
     }
 
     @Override

@@ -250,6 +250,7 @@ public class RegisterUserController {
     }
 
     private void handleCancel() {
+        closeConnector();
         view.dispose();
     }
 

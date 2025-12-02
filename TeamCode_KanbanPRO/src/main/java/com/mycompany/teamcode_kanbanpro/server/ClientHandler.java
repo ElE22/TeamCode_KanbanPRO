@@ -4,10 +4,13 @@
  */
 package com.mycompany.teamcode_kanbanpro.server;
 import com.mycompany.teamcode_kanbanpro.client.Request;
-import com.mycompany.teamcode_kanbanpro.client.Response; 
+import com.mycompany.teamcode_kanbanpro.client.Response;
+import com.mycompany.teamcode_kanbanpro.dao.ProjectDAO;
 import com.mycompany.teamcode_kanbanpro.dao.RoleDAO;
 import com.mycompany.teamcode_kanbanpro.dao.UserDAO;
+import com.mycompany.teamcode_kanbanpro.model.Role;
 import com.mycompany.teamcode_kanbanpro.model.User;
+import com.mycompany.teamcode_kanbanpro.server.handler.ProjectServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.RoleServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.UserServerHandler;
 import com.mycompany.teamcode_kanbanpro.util.BCryptUtil;
@@ -23,14 +26,16 @@ public class ClientHandler implements Runnable {
     //DAOs
     private UserDAO userDAO = new UserDAO(); 
     private final RoleDAO roleDAO = new RoleDAO();
+    private final ProjectDAO projectDAO = new ProjectDAO();
     private final UserServerHandler userHandler;
     private final RoleServerHandler roleHandler;
+    private final ProjectServerHandler projectHandler;
     
     public ClientHandler(Socket socket) { 
         this.socket = socket; 
         this.userHandler = new UserServerHandler(userDAO, roleDAO);
         this.roleHandler = new RoleServerHandler(roleDAO);
-
+        this.projectHandler = new ProjectServerHandler(projectDAO);
     }
 
     @Override
@@ -80,6 +85,10 @@ public class ClientHandler implements Runnable {
                 
             case "getroles": 
                 return roleHandler.handleGetRoles();
+                
+            case "getprojectsbyuser":
+                return projectHandler.handleGetProjectsByUser(
+                        (int) req.getPayload().get("userId"));
 
             default:
                 return new Response(false, "Acción no soportada: " + action);
@@ -89,6 +98,8 @@ public class ClientHandler implements Runnable {
     private Response handleLogin(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
+
+            
 
             String credencial = (String) p.get("usaurio");
             String clavePlain = (String) p.get("clave");
@@ -123,6 +134,9 @@ public class ClientHandler implements Runnable {
                 safeUser.setEmail(u.getEmail());
                 safeUser.setActivo(u.isActivo());
                 //devolvemos el usuario en el setData
+                Role rol= this.roleDAO.getRoleById(u.getIdRol());
+                safeUser.setRolNombre(rol.getNombre());
+                
                 r.setData(safeUser);
                 return r;
             } else {

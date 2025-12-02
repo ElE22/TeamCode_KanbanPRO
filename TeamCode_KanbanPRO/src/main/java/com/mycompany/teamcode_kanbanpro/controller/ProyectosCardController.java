@@ -5,6 +5,10 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.swing.JOptionPane;
 
 /*
@@ -17,49 +21,51 @@ import javax.swing.JOptionPane;
  * @author Emanuel
  */
 
-public class ProyectosController {
+public class ProyectosCardController {
     private ProyectosView view;
     private ClientConnector connector;
 
-    // El controlador requiere la vista para interactuar con ella
-    // y el conector para hablar con el servidor.
-    public ProyectosController(ProyectosView view, ClientConnector connector) {
+    // el controlador requiere la vista para interactuar con ella
+    // y el conector para hablar con el servidor
+    public ProyectosCardController(ProyectosView view, ClientConnector connector) {
         this.view = view;
         this.connector = connector;
         initialize();
-        cargarProyectosIniciales(); // Llama a la lógica de negocio al iniciar el controlador
+        cargarProyectosIniciales(); // llama a la logica de negocio al iniciar el controlador
     }
 
     private void initialize() {
-        // 1. Manejar el evento de crear proyecto
+        // manejar el evento de crear proyecto
         this.view.getBtnCrearProyecto().addActionListener(e -> crearNuevoProyecto());
     }
 
     private void crearNuevoProyecto() {
-        // Lógica para enviar el proyecto nuevo al servidor
+        // logica para enviar el proyecto nuevo al servidor
         String nombre = view.getTxtNombreProyecto().getText();
         String descripcion = view.getTxtDescripcion().getText();
         
-        // Aquí iría el código para construir el objeto Request 
+        // Aqui va el codigo para construir el objeto Request 
         // y usar this.connector.sendRequest()
         
         System.out.println("Intentando crear proyecto: " + nombre);
     }
     
-    private void cargarProyectosIniciales() {
-        // 2. Lógica para solicitar proyectos al servidor y actualizar la tabla (vista)
+    public void cargarProyectosIniciales() {
+        // lgica para solicitar proyectos al servidor y actualizar la tabla (vista)
         try {
             Request req = new Request();
-            req.setAction("obtenerProyectos");
-            // Puedes añadir el ID de usuario si es necesario en el payload
-            
+            req.setAction("getProjectsByUser");
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("userId", connector.getUserID());
+            req.setPayload(payload);
             Response resp = connector.sendRequest(req);
-            
             if (resp.isSuccess()) {
-                // Aquí se asumiría que resp.getPayload() trae la lista de proyectos
-                // El controlador procesa los datos y llama a un método en la vista
-                // para actualizar la tabla (ej: view.actualizarTabla(datos);)
-                System.out.println("Proyectos cargados exitosamente.");
+                // aqui se asumiria que resp.getPayload() trae la lista de proyectos
+                // el controlador procesa los datos y llama a un metodo en la vista
+                //TODO para actualizar la tabla (ej: view.actualizarTabla(datos);) 
+                
+                System.out.println("Proyectos cargados exitosamente.\n"+ resp.getData());
+                
             } else {
                  JOptionPane.showMessageDialog(null, "Error al cargar proyectos: " + resp.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }

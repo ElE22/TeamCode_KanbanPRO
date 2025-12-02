@@ -4,7 +4,6 @@
  */
 package com.mycompany.teamcode_kanbanpro.view;
 
-import javax.swing.JFrame;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
@@ -40,7 +39,7 @@ public class ProyectosView extends JPanel {
 
         // ---------- Panel dividido (Formulario / Tabla) ----------
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        splitPane.setDividerLocation(350);
+        splitPane.setDividerLocation(400);
         splitPane.setResizeWeight(0.4);
         splitPane.setBackground(Color.WHITE);
 
@@ -118,8 +117,8 @@ public class ProyectosView extends JPanel {
         
 
         // ---------- Agregar paneles al SplitPane ----------
-        splitPane.setLeftComponent(panelSprints);
-        splitPane.setRightComponent(panelProyectos);
+        splitPane.setLeftComponent(panelProyectos);
+        splitPane.setRightComponent(panelSprints);
 
         // ---------- Agregar todo al Panel Principal ----------
         add(splitPane, BorderLayout.CENTER);

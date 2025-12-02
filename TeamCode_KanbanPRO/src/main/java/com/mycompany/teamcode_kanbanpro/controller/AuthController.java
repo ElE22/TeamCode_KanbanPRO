@@ -3,6 +3,8 @@ package com.mycompany.teamcode_kanbanpro.controller;
 import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
+import com.mycompany.teamcode_kanbanpro.model.User;
+
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JOptionPane;
@@ -19,10 +21,12 @@ public class AuthController {
     RegisterUserView registerView;
     private String host;
     private int port;
+    ClientConnector conn = null;
 
-    public AuthController(LoginScreen ls, RegisterUserView ru){
-        this.loginView = ls;
-        this.registerView = ru;
+    public AuthController(){
+        this.loginView = new LoginScreen();
+        this.registerView = new RegisterUserView();
+        loginView.setVisible(true);
         this.host = "localhost";
         this.port = 3001;
         initialize();
@@ -37,7 +41,11 @@ public class AuthController {
         String user = loginView.userField.getText().trim();
         
         String pass = new String(loginView.passField.getPassword());
-        try (ClientConnector conn = new ClientConnector(host, port)) {
+
+        
+
+        try  {
+            conn = new ClientConnector(host, port);
             Request req = new Request();
             req.setAction("login");
             Map<String, Object> payload = new HashMap<>();
@@ -46,11 +54,13 @@ public class AuthController {
             req.setPayload(payload); 
             Response resp = conn.sendRequest(req);
             if (resp.isSuccess()) {
-                System.out.println("Autenticación exitosa: " + resp.getMessage());
+                User userResp = (User) resp.getData();
+                conn.setUserID(userResp.getIdUsuario());
+                conn.setUserRole(userResp.getRolNombre());
                 loginView.dispose();
-                //new KanbanBoardScreen().setVisible(true);
-                new PantallaPrincipal().setVisible(true);
+                new PantallaPrincipalController(conn);
             } else {
+                conn.close();
                 System.out.println("Error en la autenticacion: " + resp.getMessage());
                 JOptionPane.showMessageDialog(loginView, "Error de autenticación: " + resp.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                 this.loginView.userField.setText("");
@@ -59,6 +69,7 @@ public class AuthController {
             }
             
         } catch (Exception e) {
+           
             e.printStackTrace();
             JOptionPane.showMessageDialog(loginView, "Error de conexión al servidor: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

@@ -8,7 +8,6 @@ import javax.swing.JFrame;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 /**
  *
@@ -129,7 +128,7 @@ public class PantallaPrincipal extends JFrame {
         panelTareas.add(new JLabel("Gestión de Tareas"));
         
         
-        SprintsView panelSprint= new SprintsView();
+        panelSprint= new SprintsView();
         
         
         
@@ -142,18 +141,9 @@ public class PantallaPrincipal extends JFrame {
         add(panelCentral, BorderLayout.CENTER);
 
         // 🔹 Eventos del menú
-        btnInicio.addActionListener((ActionEvent e) -> cardLayout.show(panelCentral, "Dashboard"));
-        btnKanbanBoard.addActionListener((ActionEvent e) -> cardLayout.show(panelCentral, "Kanban Board"));
-        btnProyectos.addActionListener(e -> cardLayout.show(panelCentral, "Proyectos"));
-        //btnSprints.addActionListener((ActionEvent e) -> cardLayout.show(panelCentral, "Sprints"));
-        btnSalir.addActionListener(e -> {
-            int resp = JOptionPane.showConfirmDialog(this, "¿Deseas cerrar sesión?", 
-                    "Confirmar", JOptionPane.YES_NO_OPTION);
-            if (resp == JOptionPane.YES_OPTION) {
-                dispose();
-                System.out.println("Sesión cerrada.");
-            }
-        });
+        
+        
+       
     }   
     /* Método auxiliar para crear botones del menú */
     private JButton crearBotonMenu(String texto) {
