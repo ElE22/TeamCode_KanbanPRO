@@ -140,11 +140,9 @@ public class ProyectosView extends JPanel {
     public JButton getBtnCrearProyecto() { return btnCrearProyecto; }
     public JTable getTablaProyectos() { return tablaProyectos; }
     public DefaultTableModel getModeloProyectos() {
-        // Asegúrate de que tablaProyectos se inicialice con DefaultTableModel en initComponentes()
         return (DefaultTableModel) tablaProyectos.getModel();
     }
     public DefaultTableModel getModeloSprints() {
-        // Asegúrate de que tablaSprints se inicialice con DefaultTableModel en initComponentes()
         return (DefaultTableModel) tablaSprints.getModel();
     }
 }
