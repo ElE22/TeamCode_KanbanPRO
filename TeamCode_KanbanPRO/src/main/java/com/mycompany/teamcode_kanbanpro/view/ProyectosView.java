@@ -31,7 +31,7 @@ public class ProyectosView extends JPanel {
     }
 
     private void initComponentes() {
-        // ---------- Título ----------
+        // ---------- titulo ----------
         JLabel lblTitulo = new JLabel("Gestión de Proyectos (Scrum Master)", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitulo.setForeground(new Color(25, 118, 210));
@@ -57,11 +57,16 @@ public class ProyectosView extends JPanel {
 
         String[] columnasSprints = {"ID", "Nombre", "Estado", "Inicio", "Fin"};
         Object[][] datosSprints = {
-                {1, "Sprint 1 - Login", "Activo", "2024-09-01", "2024-09-15"},
-                {2, "Sprint 2 - Dashboard", "Planificado", "2024-09-16", "2024-09-30"}
+                {"Datos no cargados","Datos no cargados", "Datos no cargados","Datos no cargados","Datos no cargados"},
+               
         };
 
-        tablaSprints = new JTable(new DefaultTableModel(datosSprints, columnasSprints));
+        tablaSprints = new JTable(new DefaultTableModel(datosSprints, columnasSprints) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        });
         tablaSprints.setFillsViewportHeight(true);
         tablaSprints.setSelectionBackground(new Color(187, 222, 251));
         tablaSprints.setSelectionForeground(Color.BLACK);
@@ -97,7 +102,12 @@ public class ProyectosView extends JPanel {
             {0, "No hay datos del servidor", "No hay datos del servidor","No hay datos del servidor", "No hay datos del servidor"}
         };
         
-        tablaProyectos = new JTable(new DefaultTableModel(datos, columnas));
+        tablaProyectos = new JTable(new DefaultTableModel(datos, columnas) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; 
+            }
+        });
         tablaProyectos.setFillsViewportHeight(true);
         tablaProyectos.setSelectionBackground(new Color(187, 222, 251));
         tablaProyectos.setSelectionForeground(Color.BLACK);
@@ -132,6 +142,10 @@ public class ProyectosView extends JPanel {
     public DefaultTableModel getModeloProyectos() {
         // Asegúrate de que tablaProyectos se inicialice con DefaultTableModel en initComponentes()
         return (DefaultTableModel) tablaProyectos.getModel();
+    }
+    public DefaultTableModel getModeloSprints() {
+        // Asegúrate de que tablaSprints se inicialice con DefaultTableModel en initComponentes()
+        return (DefaultTableModel) tablaSprints.getModel();
     }
 }
 

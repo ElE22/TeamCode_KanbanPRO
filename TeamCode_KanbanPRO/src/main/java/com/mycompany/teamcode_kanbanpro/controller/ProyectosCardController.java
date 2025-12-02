@@ -5,13 +5,17 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.model.Project;
+import com.mycompany.teamcode_kanbanpro.model.Sprint;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 /*
@@ -28,6 +32,7 @@ public class ProyectosCardController {
     private ProyectosView view;
     private ClientConnector connector;
     private DefaultTableModel modeloProyectos;
+    private DefaultTableModel modeloSprints;
 
     // el controlador requiere la vista para interactuar con ella
     // y el conector para hablar con el servidor
@@ -43,6 +48,50 @@ public class ProyectosCardController {
         this.view.getBtnCrearProyecto().addActionListener(e -> crearNuevoProyecto());
         
         modeloProyectos = this.view.getModeloProyectos();
+        modeloSprints = this.view.getModeloSprints();
+        
+        this.view.getTablaProyectos().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+
+                // Obtener la JTable que disparo el evento
+                JTable tabla = (JTable) e.getSource();
+
+                // identificar la fila que fue seleccionada
+                int filaSeleccionada = tabla.getSelectedRow();
+
+                // Verificamos que se haya seleccionado una fila valida, donde -1 indica que no hay seleccion
+                if (filaSeleccionada != -1) {
+
+                    // obtenemos el id del proyecto de la fila seleccionada
+                    int idProject = (Integer) modeloProyectos.getValueAt(filaSeleccionada, 0);
+
+                    // cargar los sprints asociados a ese proyecto seleccionado
+                    cargarSprintsParaProyecto(idProject);
+                }
+            }
+        });
+    }
+
+    private void cargarSprintsParaProyecto(int projectID) {
+        try {
+            Request req = new Request();
+            req.setAction("getSprintsByProject");
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("projectId", projectID);
+            req.setPayload(payload);
+            Response resp = connector.sendRequest(req);
+            if (resp.isSuccess()) {
+                List<Sprint> listSprints = (List<Sprint>) resp.getData();
+                actualizarTablaSprints(listSprints);
+                
+            } else {
+                 JOptionPane.showMessageDialog(null, "Error al cargar sprints: " + resp.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error de comunicación con el servidor.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     private void crearNuevoProyecto() {
@@ -65,13 +114,8 @@ public class ProyectosCardController {
             req.setPayload(payload);
             Response resp = connector.sendRequest(req);
             if (resp.isSuccess()) {
-                // aqui se asumiria que resp.getPayload() trae la lista de proyectos
-                // el controlador procesa los datos y llama a un metodo en la vista
-                //TODO para actualizar la tabla (ej: view.actualizarTabla(datos);) 
                 List<Project> listProjects = (List<Project>) resp.getData();
                 actualizarTablaProyectos(listProjects); 
-                
-                System.out.println("Proyectos cargados exitosamente. Total: " + listProjects.size());
                 
             } else {
                  JOptionPane.showMessageDialog(null, "Error al cargar proyectos: " + resp.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -91,10 +135,25 @@ public class ProyectosCardController {
             fila[0] = p.getIdProyecto();
             fila[1] = p.getNombre();
             fila[2] = p.getDescripcion();
-            fila[3] = p.getGruposPertenencia(); // Asumimos que el Project Model tiene este getter String
+            fila[3] = p.getGruposPertenencia();
             fila[4] = p.getFechaCreacion();
             
             modeloProyectos.addRow(fila);
+        }
+    }
+
+    private void actualizarTablaSprints(List<Sprint> sprints) {
+        // Similar a actualizarTablaProyectos, pero para sprints
+        this.modeloSprints.setRowCount(0);
+        for (Sprint s : sprints) {
+            Object[] fila = new Object[5];
+            fila[0] = s.getIdSprint();
+            fila[1] = s.getNombre();
+            fila[2] = s.getNombreEstado();
+            fila[3] = s.getFechaInicio();
+            fila[4] = s.getFechaFin();
+            
+            modeloSprints.addRow(fila);
         }
     }
 }

@@ -30,7 +30,7 @@ public class ProjectDAO {
     private static final String UPDATE_PROJECT = "UPDATE proyecto SET nombre = ?, descripcion = ? WHERE id_proyecto = ?";
 
     private static final String SELECT_PROJECTS_AND_GROUPS_BY_USER_ID = 
-            "SELECT  p.nombre AS nombre, p.descripcion, p.fecha_creacion, " +
+            "SELECT p.id_proyecto,  p.nombre AS nombre, p.descripcion, p.fecha_creacion, " +
             "u_creator.nombre AS nombre_creador, p.id_usuario_creador, " +
             "GROUP_CONCAT(g.nombre SEPARATOR ', ') AS grupos_a_los_que_pertenezco " +
             "FROM usuario u " +
@@ -40,7 +40,7 @@ public class ProjectDAO {
             "JOIN proyecto p ON pg.id_proyecto = p.id_proyecto " +
             "JOIN usuario u_creator ON p.id_usuario_creador = u_creator.id_usuario " +
             "WHERE u.id_usuario = ? " +
-            "GROUP BY  p.nombre, p.descripcion, p.fecha_creacion, u_creator.nombre, p.id_usuario_creador " +
+            "GROUP BY p.id_proyecto, p.nombre, p.descripcion, p.fecha_creacion, u_creator.nombre, p.id_usuario_creador " +
             "ORDER BY p.nombre";
     
     // mapea una fila del resultset a un objeto project

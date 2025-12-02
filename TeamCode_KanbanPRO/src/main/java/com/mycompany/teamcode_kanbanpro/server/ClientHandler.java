@@ -7,11 +7,13 @@ import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.dao.ProjectDAO;
 import com.mycompany.teamcode_kanbanpro.dao.RoleDAO;
+import com.mycompany.teamcode_kanbanpro.dao.SprintDAO;
 import com.mycompany.teamcode_kanbanpro.dao.UserDAO;
 import com.mycompany.teamcode_kanbanpro.model.Role;
 import com.mycompany.teamcode_kanbanpro.model.User;
 import com.mycompany.teamcode_kanbanpro.server.handler.ProjectServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.RoleServerHandler;
+import com.mycompany.teamcode_kanbanpro.server.handler.SprintServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.UserServerHandler;
 import com.mycompany.teamcode_kanbanpro.util.BCryptUtil;
 import java.io.*;
@@ -27,15 +29,17 @@ public class ClientHandler implements Runnable {
     private UserDAO userDAO = new UserDAO(); 
     private final RoleDAO roleDAO = new RoleDAO();
     private final ProjectDAO projectDAO = new ProjectDAO();
+    private final SprintDAO sprintDAO = new SprintDAO();
     private final UserServerHandler userHandler;
     private final RoleServerHandler roleHandler;
     private final ProjectServerHandler projectHandler;
-    
+    private final SprintServerHandler sprintHandler;
     public ClientHandler(Socket socket) { 
         this.socket = socket; 
         this.userHandler = new UserServerHandler(userDAO, roleDAO);
         this.roleHandler = new RoleServerHandler(roleDAO);
         this.projectHandler = new ProjectServerHandler(projectDAO, userDAO);
+        this.sprintHandler = new SprintServerHandler(sprintDAO);
     }
 
     @Override
@@ -88,6 +92,8 @@ public class ClientHandler implements Runnable {
                 
             case "getprojectsbyuser":
                 return projectHandler.handleGetProjectsByUser((int) req.getPayload().get("userId"));
+            case "getsprintsbyproject":
+                return sprintHandler.handleGetSprintByProject((int) req.getPayload().get("projectId"));
             default:
                 return new Response(false, "Acción no soportada: " + action);
         }

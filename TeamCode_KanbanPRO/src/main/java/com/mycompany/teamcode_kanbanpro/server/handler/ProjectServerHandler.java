@@ -27,8 +27,9 @@ public class ProjectServerHandler {
         try {
             // validacion si el usaurio esta asociado a un grupo
             boolean userHasGroups = userDAO.isUserInAnyGroup(userId);
+            
             if (!userHasGroups) {
-                // Si el usuario no está en ningun grupo, devolvemos un mensaje de error 
+                // Si el usuario no esta en ningun grupo, devolvemos un mensaje de error 
                 return new Response(false, "El usuario debe estar asociado a un grupo para ver proyectos.");
             }
     
