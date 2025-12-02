@@ -60,7 +60,7 @@ public class PantallaPrincipal extends JFrame {
         JButton btnInicio = crearBotonMenu("Inicio");
         JButton btnKanbanBoard = crearBotonMenu("Kanban Board");
         JButton btnProyectos = crearBotonMenu("Proyectos");
-        JButton btnSprints = crearBotonMenu("Sprints");
+        //JButton btnSprints = crearBotonMenu("Sprints");
         JButton btnSalir = crearBotonMenu("Cerrar Sesión");
         /*
         menuLateral.add(btnDashboard);
@@ -71,7 +71,7 @@ public class PantallaPrincipal extends JFrame {
         menuLateral.add(btnInicio);
         menuLateral.add(btnKanbanBoard);
         menuLateral.add(btnProyectos);
-        menuLateral.add(btnSprints);
+        //menuLateral.add(btnSprints);
         //menuLateral.add(btnBacklog);
         menuLateral.add(btnSalir);
         
@@ -108,7 +108,7 @@ public class PantallaPrincipal extends JFrame {
         btnInicio.addActionListener((ActionEvent e) -> cardLayout.show(panelCentral, "Dashboard"));
         btnKanbanBoard.addActionListener((ActionEvent e) -> cardLayout.show(panelCentral, "Kanban Board"));
         btnProyectos.addActionListener(e -> cardLayout.show(panelCentral, "Proyectos"));
-        btnSprints.addActionListener((ActionEvent e) -> cardLayout.show(panelCentral, "Sprints"));
+        //btnSprints.addActionListener((ActionEvent e) -> cardLayout.show(panelCentral, "Sprints"));
         btnSalir.addActionListener(e -> {
             int resp = JOptionPane.showConfirmDialog(this, "¿Deseas cerrar sesión?", 
                     "Confirmar", JOptionPane.YES_NO_OPTION);
