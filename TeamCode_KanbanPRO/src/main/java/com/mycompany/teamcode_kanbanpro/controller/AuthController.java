@@ -12,6 +12,7 @@ import com.mycompany.teamcode_kanbanpro.view.KanbanBoardScreen;
 import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
 import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
+import javax.swing.ImageIcon;
 /**
  *
  * @author Emanuel
@@ -26,10 +27,24 @@ public class AuthController {
     public AuthController(){
         this.loginView = new LoginScreen();
         this.registerView = new RegisterUserView();
+        setIconoVentana();
         loginView.setVisible(true);
         this.host = "localhost";
         this.port = 3001;
         initialize();
+        
+    }
+    
+    
+    private void setIconoVentana() {
+        // icono de la ventana
+        java.net.URL imgURL = getClass().getResource("/com/mycompany/teamcode_kanbanpro/images/KanbanPro.png");
+        if (imgURL != null) {
+            ImageIcon icono = new ImageIcon(imgURL);
+            loginView.setIconImage(icono.getImage());
+        } else {
+            System.err.println("No se pudo cargar el ícono de la aplicación.");
+        }
     }
 
     private void initialize() {
@@ -57,6 +72,7 @@ public class AuthController {
                 User userResp = (User) resp.getData();
                 conn.setUserID(userResp.getIdUsuario());
                 conn.setUserRole(userResp.getRolNombre());
+                conn.setUserName(userResp.getNombre());
                 loginView.dispose();
                 new PantallaPrincipalController(conn);
             } else {

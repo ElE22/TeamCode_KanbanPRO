@@ -8,6 +8,8 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
 import java.awt.event.ActionEvent;
+
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 /**
@@ -24,8 +26,31 @@ public class PantallaPrincipalController {
     public PantallaPrincipalController( ClientConnector connector) {
         this.view = new PantallaPrincipal();
         this.connector = connector;
+        putNameUserBar();
         attachListeners();
+        setIconoVentana();
         view.setVisible(true);
+    }
+
+    private void setIconoVentana() {
+        // icono de la ventana
+        java.net.URL imgURL = getClass().getResource("/com/mycompany/teamcode_kanbanpro/images/KanbanPro.png");
+        if (imgURL != null) {
+            ImageIcon icono = new ImageIcon(imgURL);
+            view.setIconImage(icono.getImage());
+        } else {
+            System.err.println("No se pudo cargar el ícono de la aplicación.");
+        }
+    }
+    
+    private void putNameUserBar(){
+        if (this.connector.getUserName() != null) {
+            String nombreUsuario = this.connector.getUserName() + "(" + this.connector.getUserRole() + ")";
+            view.setLblUsuario(nombreUsuario);
+        }else {
+            view.setLblUsuario("Usuario: error al cargar nombre");
+            JOptionPane.showMessageDialog(view, "Error al cargar el nombre de usuario.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
     
     private void attachListeners() {

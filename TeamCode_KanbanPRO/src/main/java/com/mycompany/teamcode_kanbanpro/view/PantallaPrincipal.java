@@ -7,7 +7,6 @@ package com.mycompany.teamcode_kanbanpro.view;
 import javax.swing.JFrame;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
 /**
  *
@@ -16,11 +15,9 @@ import java.awt.event.ActionEvent;
 public class PantallaPrincipal extends JFrame {
     private JPanel panelCentral;
     private CardLayout cardLayout;
-      
     private ProyectosView panelProyectos;
+    JLabel lblUsuario;
     private SprintsView panelSprint;
-    
-      
     private JButton btnInicio;
     private JButton btnKanbanBoard;
     private JButton btnProyectos;
@@ -55,6 +52,16 @@ public class PantallaPrincipal extends JFrame {
         return panelProyectos;
     }
 
+    public JLabel getLblUsuario() {
+        return lblUsuario;
+    }
+
+    public void setLblUsuario(String lblUsuario) {
+        this.lblUsuario.setText( lblUsuario);
+    }
+    
+    
+
     public PantallaPrincipal() {
         setTitle("KanbanPro");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -73,9 +80,9 @@ public class PantallaPrincipal extends JFrame {
         add(barraSuperior, BorderLayout.NORTH);
         
         //JLabel lblUsuario = new JLabel(nombreUsuario + " (" + rolUsuario + ")", SwingConstants.RIGHT);
-        JLabel lblUsuario = new JLabel("Usuario: Ana García");
+        lblUsuario = new JLabel("");
         lblUsuario.setForeground(Color.WHITE);
-        lblUsuario.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblUsuario.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblUsuario.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15)); // margen derecho
         barraSuperior.add(lblUsuario, BorderLayout.EAST);
         
@@ -85,7 +92,6 @@ public class PantallaPrincipal extends JFrame {
         lblTituloApp.setFont(new Font("Segoe UI", Font.BOLD, 16));
         lblTituloApp.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // margen izquierdo
         barraSuperior.add(lblTituloApp, BorderLayout.WEST);
-       
 
         // menu lateral
         JPanel menuLateral = new JPanel();

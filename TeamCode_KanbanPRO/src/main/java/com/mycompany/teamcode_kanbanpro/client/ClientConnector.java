@@ -13,6 +13,7 @@ public class ClientConnector implements AutoCloseable {
     private ObjectOutputStream out;
     private ObjectInputStream in;
     private Integer UserID;
+    private String UserName;
     private String userRole;
 
     public ClientConnector(String host, int port) throws Exception {
@@ -42,6 +43,14 @@ public class ClientConnector implements AutoCloseable {
 
     public void setUserRole(String userRole) {
         this.userRole = userRole;
+    }
+    
+    public String getUserName() {
+        return UserName;
+    }
+
+    public void setUserName(String UserName) {
+        this.UserName = UserName;
     }
 
     @Override
