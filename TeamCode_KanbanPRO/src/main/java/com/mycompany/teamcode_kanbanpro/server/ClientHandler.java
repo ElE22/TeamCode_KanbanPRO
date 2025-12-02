@@ -35,7 +35,7 @@ public class ClientHandler implements Runnable {
         this.socket = socket; 
         this.userHandler = new UserServerHandler(userDAO, roleDAO);
         this.roleHandler = new RoleServerHandler(roleDAO);
-        this.projectHandler = new ProjectServerHandler(projectDAO);
+        this.projectHandler = new ProjectServerHandler(projectDAO, userDAO);
     }
 
     @Override
@@ -87,9 +87,7 @@ public class ClientHandler implements Runnable {
                 return roleHandler.handleGetRoles();
                 
             case "getprojectsbyuser":
-                return projectHandler.handleGetProjectsByUser(
-                        (int) req.getPayload().get("userId"));
-
+                return projectHandler.handleGetProjectsByUser((int) req.getPayload().get("userId"));
             default:
                 return new Response(false, "Acción no soportada: " + action);
         }

@@ -92,10 +92,9 @@ public class ProyectosView extends JPanel {
                 new Font("Segoe UI", Font.BOLD, 13),
                 new Color(25, 118, 210)
         ));
-        String[] columnas = {"ID", "Nombre", "Descripción", "Fecha Creación"};
+        String[] columnas = {"ID", "Nombre", "Descripción","Grupos", "Fecha Creación"};
         Object[][] datos = {
-            {10, "Plataforma Web 3.0", "Desarrollo de nueva interfaz de usuario", "2024-09-10"},
-            {11, "API Interna", "Optimización de microservicios internos", "2024-10-22"}
+            {0, "No hay datos del servidor", "No hay datos del servidor","No hay datos del servidor", "No hay datos del servidor"}
         };
         
         tablaProyectos = new JTable(new DefaultTableModel(datos, columnas));
@@ -123,11 +122,16 @@ public class ProyectosView extends JPanel {
         // ---------- Agregar todo al Panel Principal ----------
         add(splitPane, BorderLayout.CENTER);
     }
+    
 
     // Getters para acceder a los componentes desde el controlador
     public JTextField getTxtNombreProyecto() { return txtNombreProyecto; }
     public JTextArea getTxtDescripcion() { return txtDescripcion; }
     public JButton getBtnCrearProyecto() { return btnCrearProyecto; }
     public JTable getTablaProyectos() { return tablaProyectos; }
+    public DefaultTableModel getModeloProyectos() {
+        // Asegúrate de que tablaProyectos se inicialice con DefaultTableModel en initComponentes()
+        return (DefaultTableModel) tablaProyectos.getModel();
+    }
 }
 

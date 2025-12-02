@@ -28,18 +28,9 @@ public class ProjectDAO {
             "FROM proyecto p JOIN usuario u ON p.id_usuario_creador = u.id_usuario ORDER BY p.fecha_creacion DESC";
     private static final String DELETE_PROJECT = "DELETE FROM proyecto WHERE id_proyecto = ?";
     private static final String UPDATE_PROJECT = "UPDATE proyecto SET nombre = ?, descripcion = ? WHERE id_proyecto = ?";
-            
-    // consulta para obtener proyectos basados en la membresia del usuario a un grupo relacionado al proyecto
-    private static final String SELECT_PROJECTS_BY_USER_ID = 
-            "SELECT DISTINCT p.id_proyecto, p.id_usuario_creador, u.nombre as nombre_creador, p.nombre, p.descripcion, p.fecha_creacion " +
-            "FROM proyecto p " +
-            "JOIN usuario u ON p.id_usuario_creador = u.id_usuario " +
-            "JOIN proyecto_grupo pg ON p.id_proyecto = pg.id_proyecto " + // relacion n:m con grupo
-            "JOIN usuario_grupo ug ON pg.id_grupo = ug.id_grupo " + // membresia del usuario al grupo
-            "WHERE ug.id_usuario = ?";
 
     private static final String SELECT_PROJECTS_AND_GROUPS_BY_USER_ID = 
-            "SELECT p.id_proyecto, p.nombre AS nombre, p.descripcion, p.fecha_creacion, " +
+            "SELECT  p.nombre AS nombre, p.descripcion, p.fecha_creacion, " +
             "u_creator.nombre AS nombre_creador, p.id_usuario_creador, " +
             "GROUP_CONCAT(g.nombre SEPARATOR ', ') AS grupos_a_los_que_pertenezco " +
             "FROM usuario u " +
@@ -49,7 +40,7 @@ public class ProjectDAO {
             "JOIN proyecto p ON pg.id_proyecto = p.id_proyecto " +
             "JOIN usuario u_creator ON p.id_usuario_creador = u_creator.id_usuario " +
             "WHERE u.id_usuario = ? " +
-            "GROUP BY p.id_proyecto, p.nombre, p.descripcion, p.fecha_creacion, u_creator.nombre, p.id_usuario_creador " +
+            "GROUP BY  p.nombre, p.descripcion, p.fecha_creacion, u_creator.nombre, p.id_usuario_creador " +
             "ORDER BY p.nombre";
     
     // mapea una fila del resultset a un objeto project
@@ -172,15 +163,8 @@ public class ProjectDAO {
                 while (rs.next()) {
                     Project project = RowToProject(rs);
                     
-                    // AQUI EXTRAEMOS LA COLUMNA CONCATENADA Y LA GUARDAMOS EN UNA PROPIEDAD DEL MODELO
-                    // Asumire que crearas un campo string en project.java como 'gruposPertenencia'
-                    // pero ya que no puedo modificarlo, por ahora solo recuperamos el string y lo ignoramos
-                    // si necesitas usar ese string, deberias modificar el modelo project.
                     
                     String gruposConcatenados = rs.getString("grupos_a_los_que_pertenezco");
-                    
-                    // Si modificas el modelo Project para incluir setGruposPertenencia(String), descomenta:
-                    // project.setGruposPertenencia(gruposConcatenados);
 
                     project.setGruposPertenencia(gruposConcatenados);
                     

@@ -63,7 +63,7 @@ public class PantallaPrincipal extends JFrame {
         setLayout(new BorderLayout());
         setVisible(true);
 
-        // 🔹 Barra superior
+        // Barra superior
         //JPanel barraSuperior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JPanel barraSuperior = new JPanel();
         barraSuperior.setBackground(new Color(25, 118, 210));
@@ -87,7 +87,7 @@ public class PantallaPrincipal extends JFrame {
         barraSuperior.add(lblTituloApp, BorderLayout.WEST);
        
 
-        // 🔹 Menú lateral
+        // menu lateral
         JPanel menuLateral = new JPanel();
         menuLateral.setLayout(new GridLayout(5, 1, 0, 10));
         menuLateral.setBackground(new Color(38, 50, 56)); // Gris oscuro
@@ -113,7 +113,7 @@ public class PantallaPrincipal extends JFrame {
         
         add(menuLateral, BorderLayout.WEST);
 
-        // 🔹 Panel central dinámico
+        // ?panel central dinamico
         cardLayout = new CardLayout();
         panelCentral = new JPanel(cardLayout);
 
@@ -127,25 +127,17 @@ public class PantallaPrincipal extends JFrame {
         JPanel panelTareas = new JPanel();
         panelTareas.add(new JLabel("Gestión de Tareas"));
         
-        
         panelSprint= new SprintsView();
-        
-        
-        
-        // Añadimos los paneles al CardLayout
+ 
+        // añadimos los paneles al CardLayout
         panelCentral.add(panelDashboard, "Dashboard");
         panelCentral.add(panelProyectos, "Proyectos");
         panelCentral.add(panelTareas, "Tareas");
         panelCentral.add(panelSprint, "Sprints");
 
         add(panelCentral, BorderLayout.CENTER);
-
-        // 🔹 Eventos del menú
-        
-        
-       
     }   
-    /* Método auxiliar para crear botones del menú */
+    /* metodo auxiliar para crear botones del menu */
     private JButton crearBotonMenu(String texto) {
         JButton btn = new JButton(texto);
         btn.setFocusPainted(false);
@@ -156,7 +148,7 @@ public class PantallaPrincipal extends JFrame {
         btn.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 10));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Efecto hover (al pasar el mouse)
+        // efecto hover (al pasar el mouse)
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -169,8 +161,4 @@ public class PantallaPrincipal extends JFrame {
         });
         return btn;
     }
-    
-    
-
-    
 }

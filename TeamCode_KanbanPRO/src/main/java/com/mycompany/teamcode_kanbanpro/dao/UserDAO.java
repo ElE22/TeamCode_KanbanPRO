@@ -25,8 +25,9 @@ public class UserDAO {
     private static final String SELECT_ALL_USERS = "SELECT id_usuario, id_rol, usuario, nombre, email, password, activo, creado_en FROM usuario";
     private static final String UPDATE_USER_SQL = "UPDATE usuario SET id_rol = ?, usuario = ?, nombre = ?, email = ?, activo = ? WHERE id_usuario = ?";
     private static final String DELETE_USER_SQL = "DELETE FROM usuario WHERE id_usuario = ?";
+    private static final String CHECK_USER_IN_ANY_GROUP = "SELECT count(*) FROM usuario_grupo WHERE id_usuario = ? LIMIT 1";
 
-    //Mapea un ResultSet a un objeto User.
+    //Mapea un ResultSet a un objeto user
     private User mapRowToUser(ResultSet rs) throws SQLException {
         User user = new User();
         user.setIdUsuario(rs.getInt("id_usuario"));
@@ -149,6 +150,22 @@ public class UserDAO {
             e.printStackTrace();
         }
         return user;
+    }
+    
+    public boolean isUserInAnyGroup(int userId) {
+        boolean isInGroup = false;
+        try (Connection connection = DBUtil.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(CHECK_USER_IN_ANY_GROUP)) {
+            preparedStatement.setInt(1, userId);
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                if (rs.next()) {
+                    //si es o no parte de nu grupo
+                    isInGroup = rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return isInGroup;
     }
  
 }
