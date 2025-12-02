@@ -12,6 +12,8 @@ import com.mycompany.teamcode_kanbanpro.view.KanbanBoardScreen;
 import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
 import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 /**
  *
@@ -32,9 +34,7 @@ public class AuthController {
         this.host = "localhost";
         this.port = 3001;
         initialize();
-        
     }
-    
     
     private void setIconoVentana() {
         // icono de la ventana
@@ -50,15 +50,20 @@ public class AuthController {
     private void initialize() {
         this.loginView.loginButton.addActionListener(e -> {authenticateUser();});
         this.loginView.registerButton.addActionListener(e -> new RegisterUserController(this.registerView));
+        // manejamos el evento cuando se da enter en el password
+        this.loginView.passField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //lamanmos al mismo metodo del boton de iniciar sesion
+                authenticateUser(); 
+            }
+        });
     }
 
     private void authenticateUser(){
         String user = loginView.userField.getText().trim();
         
         String pass = new String(loginView.passField.getPassword());
-
-        
-
         try  {
             conn = new ClientConnector(host, port);
             Request req = new Request();
