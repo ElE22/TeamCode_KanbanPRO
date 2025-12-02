@@ -16,7 +16,7 @@ import javax.swing.border.LineBorder;
  * @author salaz
  */
 public class CrearTareaView extends JFrame {
-    private JLabel lblTituloCuadro;
+   /* private JLabel lblTituloCuadro;
     private JLabel lblTitulo;
     private JLabel lblDescripcion;
     private JLabel lblPrioridad;
@@ -104,6 +104,6 @@ public class CrearTareaView extends JFrame {
         panelTareas.add(panelFormulario, BorderLayout.CENTER);
         add(panelTareas, BorderLayout.CENTER);
     }
-
+*/
 
 }

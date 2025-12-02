@@ -12,7 +12,7 @@ import java.awt.*;
  * @author salaz
  */
 public class SprintsView extends JPanel{
-    private JTable tablaSprints;
+   /* private JTable tablaSprints;
     private JTable tablaBacklog;
     private JButton btnCrearSprint;
     private JButton btnAsignarTareas;
@@ -132,4 +132,5 @@ public class SprintsView extends JPanel{
 
         add(splitPane, BorderLayout.CENTER);
     }
+*/
 }
