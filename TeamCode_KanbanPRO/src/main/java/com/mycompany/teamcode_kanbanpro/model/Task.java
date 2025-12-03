@@ -41,6 +41,7 @@ public class Task  implements Serializable{
     // para relaciones n:m (asignacion de usuarios) y recursiva (subtareas)
     private List<User> usuariosAsignados; 
     private List<Task> subtareas;
+    private List<Group> gruposAsignados;
 
     // constructor vacio
     public Task() {

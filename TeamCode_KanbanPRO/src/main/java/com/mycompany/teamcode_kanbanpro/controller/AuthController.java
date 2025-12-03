@@ -8,7 +8,6 @@ import com.mycompany.teamcode_kanbanpro.model.User;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JOptionPane;
-import com.mycompany.teamcode_kanbanpro.view.KanbanBoardScreen;
 import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
 import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
