@@ -28,7 +28,9 @@ public class ProjectDAO {
             "FROM proyecto p JOIN usuario u ON p.id_usuario_creador = u.id_usuario ORDER BY p.fecha_creacion DESC";
     private static final String DELETE_PROJECT = "DELETE FROM proyecto WHERE id_proyecto = ?";
     private static final String UPDATE_PROJECT = "UPDATE proyecto SET nombre = ?, descripcion = ? WHERE id_proyecto = ?";
-
+    
+    
+    /*
     private static final String SELECT_PROJECTS_AND_GROUPS_BY_USER_ID = 
             "SELECT p.id_proyecto,  p.nombre AS nombre, p.descripcion, p.fecha_creacion, " +
             "u_creator.nombre AS nombre_creador, p.id_usuario_creador, " +
@@ -42,7 +44,7 @@ public class ProjectDAO {
             "WHERE u.id_usuario = ? " +
             "GROUP BY p.id_proyecto, p.nombre, p.descripcion, p.fecha_creacion, u_creator.nombre, p.id_usuario_creador " +
             "ORDER BY p.nombre";
-    
+    */
     // mapea una fila del resultset a un objeto project
     private Project RowToProject(ResultSet rs) throws SQLException {
         Project project = new Project();
@@ -150,7 +152,7 @@ public class ProjectDAO {
         }
         return rowUpdated;
     }
-
+    /*
     // obtiene todos los proyectos a los que pertenece un usuario (via grupo)
     public List<Project> selectProjectsByUserId(int userId) {
         List<Project> projects = new ArrayList<>();
@@ -177,4 +179,38 @@ public class ProjectDAO {
         }
         return projects;
     }
+*/
+    // obtiene todos los proyectos creados por el usuario (sin grupos)
+public List<Project> selectProjectsByUserId(int userId) {
+    List<Project> projects = new ArrayList<>();
+    String sql = "SELECT p.id_proyecto, p.id_usuario_creador, u.nombre as nombre_creador, " +
+                 "p.nombre, p.descripcion, p.fecha_creacion " +
+                 "FROM proyecto p " +
+                 "JOIN usuario u ON p.id_usuario_creador = u.id_usuario " +
+                 "WHERE p.id_usuario_creador = ? " +
+                 "ORDER BY p.fecha_creacion DESC";
+
+    try (Connection connection = DBUtil.getConnection();
+         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        preparedStatement.setInt(1, userId);
+
+        try (ResultSet rs = preparedStatement.executeQuery()) {
+            while (rs.next()) {
+                Project project = new Project();
+                project.setIdProyecto(rs.getInt("id_proyecto"));
+                project.setIdUsuarioCreador(rs.getInt("id_usuario_creador"));
+                project.setNombre(rs.getString("nombre"));
+                project.setDescripcion(rs.getString("descripcion"));
+                project.setFechaCreacion(rs.getTimestamp("fecha_creacion"));
+                project.setNombreCreador(rs.getString("nombre_creador"));
+                project.setGruposPertenencia("Sin grupos (modo pruebas)");
+                projects.add(project);
+            }
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+    return projects;
+}
 }

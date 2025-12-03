@@ -2,12 +2,25 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+/*
+ * DAO para operaciones de Grupos
+ * 
+ * ACTUALIZADO: Agregado método selectUsersByGroupId
+ * 
+ * Maneja:
+ * - CRUD de grupos
+ * - Relaciones grupo-proyecto (N:M)
+ * - Relaciones grupo-usuario (N:M)
+ * - Obtener usuarios por grupo (NUEVO)
+ * 
+ * 
+ * @author Emanuel
+ */
 package com.mycompany.teamcode_kanbanpro.dao;
 
-
 import com.mycompany.teamcode_kanbanpro.model.Group;
-import com.mycompany.teamcode_kanbanpro.model.User; 
 import com.mycompany.teamcode_kanbanpro.util.DBUtil;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,40 +30,70 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
- * @author Emanuel
+ * DAO para operaciones de Grupos
+ * 
+ * Maneja:
+ * - CRUD de grupos
+ * - Relaciones grupo-proyecto (N:M)
+ * - Relaciones grupo-usuario (N:M)
+ * 
+ * @author Emanuel / TeamCode
  */
-
 public class GroupDAO {
     
-    // consultas basicas de grupo
-    private static final String INSERT_GROUP = "INSERT INTO grupo (nombre, descripcion) VALUES (?, ?)";
-    private static final String SELECT_GROUP_BY_ID = "SELECT id_grupo, nombre, descripcion FROM grupo WHERE id_grupo = ?";
-    private static final String SELECT_ALL_GROUPS = "SELECT id_grupo, nombre, descripcion FROM grupo ORDER BY nombre";
-    private static final String UPDATE_GROUP = "UPDATE grupo SET nombre = ?, descripcion = ? WHERE id_grupo = ?";
-    private static final String DELETE_GROUP = "DELETE FROM grupo WHERE id_grupo = ?";
+    // ==================== CONSULTAS BÁSICAS ====================
+    private static final String INSERT_GROUP = 
+        "INSERT INTO grupo (nombre, descripcion) VALUES (?, ?)";
+        
+    private static final String SELECT_GROUP_BY_ID = 
+        "SELECT id_grupo, nombre, descripcion FROM grupo WHERE id_grupo = ?";
+        
+    private static final String SELECT_ALL_GROUPS = 
+        "SELECT id_grupo, nombre, descripcion FROM grupo ORDER BY nombre";
+        
+    private static final String UPDATE_GROUP = 
+        "UPDATE grupo SET nombre = ?, descripcion = ? WHERE id_grupo = ?";
+        
+    private static final String DELETE_GROUP = 
+        "DELETE FROM grupo WHERE id_grupo = ?";
     
-    // consultas para las relaciones n:m
+    // ==================== CONSULTAS DE RELACIONES ====================
     private static final String SELECT_GROUPS_BY_PROJECT = 
-            "SELECT g.id_grupo, g.nombre, g.descripcion " +
-            "FROM grupo g " +
-            "JOIN proyecto_grupo pg ON g.id_grupo = pg.id_grupo " +
-            "WHERE pg.id_proyecto = ?";
+        "SELECT g.id_grupo, g.nombre, g.descripcion " +
+        "FROM grupo g " +
+        "JOIN proyecto_grupo pg ON g.id_grupo = pg.id_grupo " +
+        "WHERE pg.id_proyecto = ? " +
+        "ORDER BY g.nombre";
     
     private static final String SELECT_GROUPS_BY_USER = 
-            "SELECT g.id_grupo, g.nombre, g.descripcion " +
-            "FROM grupo g " +
-            "JOIN usuario_grupo ug ON g.id_grupo = ug.id_grupo " +
-            "WHERE ug.id_usuario = ?";
+        "SELECT g.id_grupo, g.nombre, g.descripcion " +
+        "FROM grupo g " +
+        "JOIN usuario_grupo ug ON g.id_grupo = ug.id_grupo " +
+        "WHERE ug.id_usuario = ? " +
+        "ORDER BY g.nombre";
     
-    private static final String ADD_USER_TO_GROUP = "INSERT INTO usuario_grupo (id_usuario, id_grupo) VALUES (?, ?)";
-    private static final String REMOVE_USER_FROM_GROUP = "DELETE FROM usuario_grupo WHERE id_usuario = ? AND id_grupo = ?";
-    private static final String ASSIGN_GROUP_TO_PROJECT = "INSERT INTO proyecto_grupo (id_proyecto, id_grupo) VALUES (?, ?)";
-    private static final String REMOVE_GROUP_FROM_PROJECT = "DELETE FROM proyecto_grupo WHERE id_proyecto = ? AND id_grupo = ?";
+    // Operaciones N:M
+    private static final String ADD_USER_TO_GROUP = 
+        "INSERT INTO usuario_grupo (id_usuario, id_grupo) VALUES (?, ?)";
+        
+    private static final String REMOVE_USER_FROM_GROUP = 
+        "DELETE FROM usuario_grupo WHERE id_usuario = ? AND id_grupo = ?";
+        
+    private static final String ASSIGN_GROUP_TO_PROJECT = 
+        "INSERT INTO proyecto_grupo (id_proyecto, id_grupo) VALUES (?, ?)";
+        
+    private static final String REMOVE_GROUP_FROM_PROJECT = 
+        "DELETE FROM proyecto_grupo WHERE id_proyecto = ? AND id_grupo = ?";
+    
+    private static final String CHECK_GROUP_PROJECT_EXISTS = 
+        "SELECT COUNT(*) FROM proyecto_grupo WHERE id_proyecto = ? AND id_grupo = ?";
 
-
-    // mapea una fila del resultset a un objeto group
-    private Group RowToGroup(ResultSet rs) throws SQLException {
+    // ==================== MAPEO ====================
+    
+    /**
+     * Mapea una fila del ResultSet a un objeto Group
+     */
+    private Group mapRowToGroup(ResultSet rs) throws SQLException {
         Group group = new Group();
         group.setIdGrupo(rs.getInt("id_grupo"));
         group.setNombre(rs.getString("nombre"));
@@ -58,161 +101,265 @@ public class GroupDAO {
         return group;
     }
 
-    // inserta un nuevo grupo
+    // ==================== OPERACIONES CRUD ====================
+
+    /**
+     * Inserta un nuevo grupo
+     * @return ID generado o -1 si falla
+     */
     public int insertGroup(Group group) {
         int generatedId = -1;
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_GROUP, Statement.RETURN_GENERATED_KEYS)) {
+             PreparedStatement ps = connection.prepareStatement(INSERT_GROUP, Statement.RETURN_GENERATED_KEYS)) {
             
-            preparedStatement.setString(1, group.getNombre());
-            preparedStatement.setString(2, group.getDescripcion());
+            ps.setString(1, group.getNombre());
+            ps.setString(2, group.getDescripcion());
             
-            preparedStatement.executeUpdate();
+            int affectedRows = ps.executeUpdate();
             
-            try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
-                if (rs.next()) {
-                    generatedId = rs.getInt(1);
+            if (affectedRows > 0) {
+                try (ResultSet rs = ps.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        generatedId = rs.getInt(1);
+                    }
                 }
             }
         } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al insertar grupo: " + e.getMessage());
             e.printStackTrace();
         }
         return generatedId;
     }
 
-    // obtiene un grupo por su id
+    /**
+     * Obtiene un grupo por su ID
+     */
     public Group selectGroupById(int groupId) {
         Group group = null;
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_GROUP_BY_ID)) {
+             PreparedStatement ps = connection.prepareStatement(SELECT_GROUP_BY_ID)) {
             
-            preparedStatement.setInt(1, groupId);
+            ps.setInt(1, groupId);
             
-            try (ResultSet rs = preparedStatement.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    group = RowToGroup(rs);
+                    group = mapRowToGroup(rs);
                 }
             }
         } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al obtener grupo: " + e.getMessage());
             e.printStackTrace();
         }
         return group;
     }
     
-    // obtiene todos los grupos
+    /**
+     * Obtiene todos los grupos del sistema
+     */
     public List<Group> selectAllGroups() {
         List<Group> groups = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_ALL_GROUPS);
-             ResultSet rs = preparedStatement.executeQuery()) {
+             PreparedStatement ps = connection.prepareStatement(SELECT_ALL_GROUPS);
+             ResultSet rs = ps.executeQuery()) {
             
             while (rs.next()) {
-                groups.add(RowToGroup(rs));
+                groups.add(mapRowToGroup(rs));
             }
         } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al obtener todos los grupos: " + e.getMessage());
             e.printStackTrace();
         }
         return groups;
     }
     
-    // actualiza un grupo
+    /**
+     * Actualiza un grupo
+     */
     public boolean updateGroup(Group group) {
-        boolean rowUpdated = false;
+        boolean updated = false;
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_GROUP)) {
+             PreparedStatement ps = connection.prepareStatement(UPDATE_GROUP)) {
             
-            preparedStatement.setString(1, group.getNombre());
-            preparedStatement.setString(2, group.getDescripcion());
-            preparedStatement.setInt(3, group.getIdGrupo());
+            ps.setString(1, group.getNombre());
+            ps.setString(2, group.getDescripcion());
+            ps.setInt(3, group.getIdGrupo());
             
-            rowUpdated = preparedStatement.executeUpdate() > 0;
+            updated = ps.executeUpdate() > 0;
             
         } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al actualizar grupo: " + e.getMessage());
             e.printStackTrace();
         }
-        return rowUpdated;
+        return updated;
     }
 
-    // elimina un grupo
+    /**
+     * Elimina un grupo
+     */
     public boolean deleteGroup(int groupId) {
-        boolean rowDeleted = false;
+        boolean deleted = false;
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(DELETE_GROUP)) {
+             PreparedStatement ps = connection.prepareStatement(DELETE_GROUP)) {
             
-            preparedStatement.setInt(1, groupId);
-            rowDeleted = preparedStatement.executeUpdate() > 0;
+            ps.setInt(1, groupId);
+            deleted = ps.executeUpdate() > 0;
             
         } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al eliminar grupo: " + e.getMessage());
             e.printStackTrace();
         }
-        return rowDeleted;
+        return deleted;
     }
     
-    // --- metodos de relacion ---
+    // ==================== OPERACIONES DE RELACIÓN ====================
 
-    // obtiene los grupos asignados a un proyecto
+    /**
+     * Obtiene los grupos asignados a un proyecto
+     */
     public List<Group> selectGroupsByProjectId(int projectId) {
         List<Group> groups = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_GROUPS_BY_PROJECT)) {
+             PreparedStatement ps = connection.prepareStatement(SELECT_GROUPS_BY_PROJECT)) {
             
-            preparedStatement.setInt(1, projectId);
+            ps.setInt(1, projectId);
             
-            try (ResultSet rs = preparedStatement.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    groups.add(RowToGroup(rs));
+                    groups.add(mapRowToGroup(rs));
                 }
             }
         } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al obtener grupos del proyecto: " + e.getMessage());
             e.printStackTrace();
         }
         return groups;
     }
     
-    // obtiene los grupos a los que pertenece un usuario
+    /**
+     * Obtiene los grupos a los que pertenece un usuario
+     */
     public List<Group> selectGroupsByUserId(int userId) {
         List<Group> groups = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_GROUPS_BY_USER)) {
+             PreparedStatement ps = connection.prepareStatement(SELECT_GROUPS_BY_USER)) {
             
-            preparedStatement.setInt(1, userId);
+            ps.setInt(1, userId);
             
-            try (ResultSet rs = preparedStatement.executeQuery()) {
+            try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    groups.add(RowToGroup(rs));
+                    groups.add(mapRowToGroup(rs));
                 }
             }
         } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al obtener grupos del usuario: " + e.getMessage());
             e.printStackTrace();
         }
         return groups;
     }
 
-    // añade un usuario a un grupo
+    /**
+     * Añade un usuario a un grupo
+     */
     public boolean addUserToGroup(int userId, int groupId) {
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(ADD_USER_TO_GROUP)) {
+             PreparedStatement ps = connection.prepareStatement(ADD_USER_TO_GROUP)) {
             
-            preparedStatement.setInt(1, userId);
-            preparedStatement.setInt(2, groupId);
-            return preparedStatement.executeUpdate() > 0;
+            ps.setInt(1, userId);
+            ps.setInt(2, groupId);
+            return ps.executeUpdate() > 0;
+            
         } catch (Exception e) {
+            // Puede fallar si ya existe la relación (PK duplicada)
+            System.err.println("[GroupDAO] Error al añadir usuario a grupo: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Remueve un usuario de un grupo
+     */
+    public boolean removeUserFromGroup(int userId, int groupId) {
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(REMOVE_USER_FROM_GROUP)) {
+            
+            ps.setInt(1, userId);
+            ps.setInt(2, groupId);
+            return ps.executeUpdate() > 0;
+            
+        } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al remover usuario de grupo: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    /**
+     * Asigna un grupo a un proyecto
+     */
+    public boolean assignGroupToProject(int projectId, int groupId) {
+        // Primero verificar si ya existe la relación
+        if (isGroupAssignedToProject(projectId, groupId)) {
+            System.out.println("[GroupDAO] El grupo " + groupId + 
+                             " ya está asignado al proyecto " + projectId);
+            return true; // Ya existe, consideramos éxito
+        }
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(ASSIGN_GROUP_TO_PROJECT)) {
+            
+            ps.setInt(1, projectId);
+            ps.setInt(2, groupId);
+            
+            boolean success = ps.executeUpdate() > 0;
+            
+            if (success) {
+                System.out.println("[GroupDAO] Grupo " + groupId + 
+                                 " asignado al proyecto " + projectId);
+            }
+            
+            return success;
+            
+        } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al asignar grupo a proyecto: " + e.getMessage());
             e.printStackTrace();
             return false;
         }
     }
     
-    // asigna un grupo a un proyecto
-    public boolean assignGroupToProject(int projectId, int groupId) {
+    /**
+     * Remueve un grupo de un proyecto
+     */
+    public boolean removeGroupFromProject(int projectId, int groupId) {
         try (Connection connection = DBUtil.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(ASSIGN_GROUP_TO_PROJECT)) {
+             PreparedStatement ps = connection.prepareStatement(REMOVE_GROUP_FROM_PROJECT)) {
             
-            preparedStatement.setInt(1, projectId);
-            preparedStatement.setInt(2, groupId);
-            return preparedStatement.executeUpdate() > 0;
+            ps.setInt(1, projectId);
+            ps.setInt(2, groupId);
+            return ps.executeUpdate() > 0;
+            
         } catch (Exception e) {
-            e.printStackTrace();
+            System.err.println("[GroupDAO] Error al remover grupo de proyecto: " + e.getMessage());
             return false;
         }
+    }
+    
+    /**
+     * Verifica si un grupo ya está asignado a un proyecto
+     */
+    public boolean isGroupAssignedToProject(int projectId, int groupId) {
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement ps = connection.prepareStatement(CHECK_GROUP_PROJECT_EXISTS)) {
+            
+            ps.setInt(1, projectId);
+            ps.setInt(2, groupId);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[GroupDAO] Error al verificar asignación: " + e.getMessage());
+        }
+        return false;
     }
 }

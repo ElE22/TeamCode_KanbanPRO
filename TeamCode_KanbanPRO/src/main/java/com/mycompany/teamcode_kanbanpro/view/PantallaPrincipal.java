@@ -7,6 +7,7 @@ package com.mycompany.teamcode_kanbanpro.view;
 import javax.swing.JFrame;
 import javax.swing.*;
 import java.awt.*;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 /**
  *
@@ -17,7 +18,7 @@ public class PantallaPrincipal extends JFrame {
     private CardLayout cardLayout;
     private ProyectosView panelProyectos;
     JLabel lblUsuario;
-    private SprintsView panelSprint;
+    //private SprintsView panelSprint;
     private JButton btnInicio;
     private JButton btnKanbanBoard;
     private JButton btnProyectos;
@@ -133,13 +134,13 @@ public class PantallaPrincipal extends JFrame {
         JPanel panelTareas = new JPanel();
         panelTareas.add(new JLabel("Gestión de Tareas"));
         
-        panelSprint= new SprintsView();
+       // panelSprint= new SprintsView();
  
         // añadimos los paneles al CardLayout
         panelCentral.add(panelDashboard, "Dashboard");
         panelCentral.add(panelProyectos, "Proyectos");
         panelCentral.add(panelTareas, "Tareas");
-        panelCentral.add(panelSprint, "Sprints");
+       // panelCentral.add(panelSprint, "Sprints");
 
         add(panelCentral, BorderLayout.CENTER);
     }   
