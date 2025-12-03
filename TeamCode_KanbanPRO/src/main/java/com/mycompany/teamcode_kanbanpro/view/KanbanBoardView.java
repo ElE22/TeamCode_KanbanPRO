@@ -4,6 +4,7 @@
  */
 package com.mycompany.teamcode_kanbanpro.view;
 
+import com.mycompany.teamcode_kanbanpro.controller.KanbanBoardController;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -15,6 +16,8 @@ import java.awt.dnd.DragSourceDragEvent;
 import java.awt.dnd.DragSourceEvent;
 import java.awt.dnd.DragSourceListener;
 import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -28,11 +31,13 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     private KanbanColumnPanel reviewColumn;
     private KanbanColumnPanel doneColumn;
     private JButton createTaskButton;
-
+    private KanbanBoardController controller;
+    private final Map<String, KanbanColumnPanel> columnsMap = new HashMap<>();
+    private JPanel kanbanColumnsPanel;
     public KanbanBoardView() {
         initializeFrame();
         createTopPanel();
-        createKanbanBoard();
+        createKanbanBoardLayout();
     }
 
     private void initializeFrame() {
@@ -63,7 +68,6 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
         createTaskButton.setBorderPainted(false);
         createTaskButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         createTaskButton.setPreferredSize(new Dimension(150, 38));
-        createTaskButton.addActionListener(e -> onCreateTaskClicked());
         topPanel.add(createTaskButton, BorderLayout.EAST);
         
         mainPanel.add(topPanel, BorderLayout.NORTH);
@@ -81,55 +85,75 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
         return boardPanel;
     }
 
-    private void createKanbanBoard() {
-        JPanel boardPanel = (JPanel) ((JPanel) getContentPane()).getComponent(1);
+//    private void createKanbanBoard() {
+//        JPanel boardPanel = (JPanel) ((JPanel) getContentPane()).getComponent(1);
+//        
+//        // Crear columnas con colores pasteles
+//        backlogColumn = new KanbanColumnPanel("Backlog", new Color(255, 214, 230), this);
+//        inProgressColumn = new KanbanColumnPanel("In Progress", new Color(200, 230, 201), this);
+//        reviewColumn = new KanbanColumnPanel("Review", new Color(187, 222, 251), this);
+//        doneColumn = new KanbanColumnPanel("Done", new Color(225, 190, 231), this);
+//
+//        // Agregar tareas de ejemplo
+//        addExampleTasks();
+//
+//        // Agregar columnas al tablero
+//        boardPanel.add(backlogColumn);
+//        boardPanel.add(inProgressColumn);
+//        boardPanel.add(reviewColumn);
+//        boardPanel.add(doneColumn);
+//    }
+//
+//    private void addExampleTasks() {
+//        backlogColumn.addTask(new KanbanTaskPanel(
+//            "Implementar Login", 
+//            "ALTA", 
+//            "Backend, Frontend", 
+//            "Sistema de autenticación de usuarios con JWT",
+//            this
+//        ));
+//        
+//        backlogColumn.addTask(new KanbanTaskPanel(
+//            "Diseño de la Pizarra", 
+//            "MEDIA", 
+//            "Frontend, Diseño", 
+//            "Crear mockups y prototipos de la interfaz Kanban",
+//            this
+//        ));
+//        
+//        inProgressColumn.addTask(new KanbanTaskPanel(
+//            "Revisar Diagrama E-R", 
+//            "BAJA", 
+//            "Backend, Logística", 
+//            "Validar relaciones y normalización de base de datos",
+//            this
+//        ));
+//    }
+    
+    private void createKanbanBoardLayout() {
+        // Inicializar el panel con un layout horizontal (Box o Flow)
+        kanbanColumnsPanel = new JPanel();
+        // Usamos BoxLayout para que las columnas se apilen horizontalmente
+        kanbanColumnsPanel.setLayout(new BoxLayout(kanbanColumnsPanel, BoxLayout.X_AXIS)); 
         
-        // Crear columnas con colores pasteles
-        backlogColumn = new KanbanColumnPanel("Backlog", new Color(255, 214, 230), this);
-        inProgressColumn = new KanbanColumnPanel("In Progress", new Color(200, 230, 201), this);
-        reviewColumn = new KanbanColumnPanel("Review", new Color(187, 222, 251), this);
-        doneColumn = new KanbanColumnPanel("Done", new Color(225, 190, 231), this);
-
-        // Agregar tareas de ejemplo
-        addExampleTasks();
-
-        // Agregar columnas al tablero
-        boardPanel.add(backlogColumn);
-        boardPanel.add(inProgressColumn);
-        boardPanel.add(reviewColumn);
-        boardPanel.add(doneColumn);
-    }
-
-    private void addExampleTasks() {
-        backlogColumn.addTask(new KanbanTaskPanel(
-            "Implementar Login", 
-            "ALTA", 
-            "Backend, Frontend", 
-            "Sistema de autenticación de usuarios con JWT",
-            this
-        ));
+        // El panel de columnas se envuelve en un JScrollPane para el scroll horizontal
+        JScrollPane scrollPane = new JScrollPane(kanbanColumnsPanel);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER); 
         
-        backlogColumn.addTask(new KanbanTaskPanel(
-            "Diseño de la Pizarra", 
-            "MEDIA", 
-            "Frontend, Diseño", 
-            "Crear mockups y prototipos de la interfaz Kanban",
-            this
-        ));
-        
-        inProgressColumn.addTask(new KanbanTaskPanel(
-            "Revisar Diagrama E-R", 
-            "BAJA", 
-            "Backend, Logística", 
-            "Validar relaciones y normalización de base de datos",
-            this
-        ));
+        // Agregar al JFrame (asumiendo que es el centro del layout principal)
+        getContentPane().add(scrollPane, BorderLayout.CENTER); 
     }
 
     // Callback para el botón de crear tarea
-    private void onCreateTaskClicked() {
-        // Aquí se conectará con el controller
-        JOptionPane.showMessageDialog(this, "Funcionalidad de crear tarea aquí");
+    
+    
+    public void addColumn(KanbanColumnPanel columnPanel) {
+        kanbanColumnsPanel.add(columnPanel); 
+        columnsMap.put(columnPanel.getColumnName(), columnPanel); 
+        // Refrescar el layout después de añadir
+        kanbanColumnsPanel.revalidate();
+        kanbanColumnsPanel.repaint();
     }
 
     // Método para notificar cuando se mueve una tarea
@@ -219,6 +243,18 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
 
     public JButton getCreateTaskButton() {
         return createTaskButton;
+    }
+    
+    public void setController(KanbanBoardController controller) {
+        this.controller = controller;
+    }
+    
+    public KanbanBoardController getController() {
+        return controller;
+    }
+    
+    public KanbanColumnPanel findColumnByName(String columnName) {
+        return columnsMap.get(columnName);
     }
 
     public static void main(String[] args) {

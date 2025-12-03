@@ -4,6 +4,7 @@
  */
 package com.mycompany.teamcode_kanbanpro.view;
 
+import com.mycompany.teamcode_kanbanpro.model.Task;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -15,19 +16,11 @@ import java.awt.dnd.DragSource;
  */
 
 public class KanbanTaskPanel extends JPanel {
-    
-    private final String title;
-    private final String priority;
-    private final String groups;
-    private final String description;
+    private final Task taskData;
     private final KanbanBoardView parentView;
 
-    public KanbanTaskPanel(String title, String priority, String groups, 
-                          String description, KanbanBoardView parentView) {
-        this.title = title;
-        this.priority = priority;
-        this.groups = groups;
-        this.description = description;
+    public KanbanTaskPanel(Task tData, KanbanBoardView parentView) {
+        this.taskData = tData;
         this.parentView = parentView;
         
         initializePanel();
@@ -41,7 +34,7 @@ public class KanbanTaskPanel extends JPanel {
         setPreferredSize(new Dimension(250, 122));
         
         setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(getPriorityColor(priority), 3),
+            BorderFactory.createLineBorder(getPriorityColor(this.taskData.getNombrePrioridad()), 3),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
         
@@ -50,8 +43,8 @@ public class KanbanTaskPanel extends JPanel {
     }
 
     private void createTaskComponents() {
-        // Título
-        JLabel titleLabel = new JLabel("<html><b>" + title + "</b></html>");
+        // Titulo
+        JLabel titleLabel = new JLabel("<html><b>" + this.taskData.getTitulo() + "</b></html>");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 13));
         titleLabel.setForeground(new Color(40, 40, 40));
         add(titleLabel, BorderLayout.NORTH);
@@ -66,7 +59,7 @@ public class KanbanTaskPanel extends JPanel {
     }
 
     private JTextArea createDescriptionArea() {
-        JTextArea descArea = new JTextArea(description);
+        JTextArea descArea = new JTextArea(this.taskData.getDescripcion());
         descArea.setFont(new Font("Arial", Font.PLAIN, 11));
         descArea.setForeground(new Color(90, 90, 90));
         descArea.setLineWrap(true);
@@ -87,7 +80,7 @@ public class KanbanTaskPanel extends JPanel {
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
         bottomPanel.setOpaque(false);
 
-        JLabel priorityLabel = new JLabel("Prioridad: " + priority);
+        JLabel priorityLabel = new JLabel("Prioridad: " + this.taskData.getNombrePrioridad());
         priorityLabel.setFont(new Font("Arial", Font.BOLD, 10));
         priorityLabel.setForeground(new Color(100, 100, 100));
 
@@ -101,7 +94,7 @@ public class KanbanTaskPanel extends JPanel {
     }
 
     private JLabel createGroupsLabel() {
-        JLabel groupsLabel = new JLabel(" " + groups + " ");
+        JLabel groupsLabel = new JLabel(" " + this.taskData.getGruposAsignados() + " ");
         groupsLabel.setBackground(new Color(220, 240, 230)); 
         groupsLabel.setForeground(new Color(60, 100, 80));  
         groupsLabel.setBorder(new EmptyBorder(3, 8, 3, 8));
@@ -136,25 +129,15 @@ public class KanbanTaskPanel extends JPanel {
         };
     }
 
-    // --- Getters para acceso desde otras capas ---
-
+    public Task getTaskData() {
+        return taskData;
+    }
+    
     public String getTitle() {
-        return title;
+         return taskData.getTitulo();
     }
 
-    public String getPriority() {
-        return priority;
-    }
-
-    public String getGroups() {
-        return groups;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    //Obtiene la columna padre donde está esta tarea
+    //Obtiene la columna padre donde esta esta tarea
     public KanbanColumnPanel getParentColumn() {
         Container parent = getParent();
         if (parent instanceof KanbanColumnPanel) {

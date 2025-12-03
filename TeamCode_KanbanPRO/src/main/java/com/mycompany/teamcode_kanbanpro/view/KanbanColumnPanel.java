@@ -4,6 +4,7 @@
  */
 package com.mycompany.teamcode_kanbanpro.view;
 
+import com.mycompany.teamcode_kanbanpro.model.Column;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -12,20 +13,19 @@ import java.awt.*;
  * @author Emanuel
  */
 public class KanbanColumnPanel extends JPanel {
-    
-    private final String columnName;
-    private final Color headerColor;
+    private final Column columnData;
     private final KanbanBoardView parentView;
-
-    public KanbanColumnPanel(String columnName, Color headerColor, KanbanBoardView parentView) {
-        this.columnName = columnName;
-        this.headerColor = headerColor;
+    
+    public KanbanColumnPanel(Column columnData, KanbanBoardView parentView) {
+        this.columnData = columnData; // Guardar el modelo
         this.parentView = parentView;
-        
         initializePanel();
         createHeader();
         setupTransferHandler();
     }
+    
+    
+    
 
     private void initializePanel() {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -34,12 +34,12 @@ public class KanbanColumnPanel extends JPanel {
     }
 
     private void createHeader() {
-        JLabel titleLabel = new JLabel(columnName, SwingConstants.CENTER);
+        JLabel titleLabel = new JLabel(columnData.getNombre(), SwingConstants.CENTER);
         titleLabel.setForeground(new Color(60, 60, 60));
         titleLabel.setFont(new Font("Arial", Font.BOLD, 14));
         titleLabel.setBorder(new EmptyBorder(8, 5, 8, 5));
         titleLabel.setOpaque(true);
-        titleLabel.setBackground(headerColor);
+        titleLabel.setBackground(Color.decode(columnData.getColor()));
         titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         titleLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
         
@@ -100,9 +100,12 @@ public class KanbanColumnPanel extends JPanel {
         }
     }
 
-    public String getColumnName() {
-        return columnName;
+    public Column getColumnData() {
+        return columnData;
     }
+    public String getColumnName() {
+        return columnData.getNombre();
+    } 
 
     //Verifica si una tarea ya está en esta columna
     public boolean containsTask(KanbanTaskPanel taskPanel) {

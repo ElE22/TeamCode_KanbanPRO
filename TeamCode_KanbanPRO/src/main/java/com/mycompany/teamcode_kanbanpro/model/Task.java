@@ -41,7 +41,15 @@ public class Task  implements Serializable{
     // para relaciones n:m (asignacion de usuarios) y recursiva (subtareas)
     private List<User> usuariosAsignados; 
     private List<Task> subtareas;
-    private List<Group> gruposAsignados;
+    private String gruposAsignados;
+
+    public String getGruposAsignados() {
+        return gruposAsignados;
+    }
+
+    public void setGruposAsignados(String gruposAsignados) {
+        this.gruposAsignados = gruposAsignados;
+    }
 
     // constructor vacio
     public Task() {
