@@ -269,7 +269,7 @@ public class CrearProyectoView extends JFrame {
             }
         });
     }
-    
+    */
     public JTextField getTxtNombre() { 
         return txtNombre; 
     }
