@@ -3,16 +3,19 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package com.mycompany.teamcode_kanbanpro.view;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.util.List;
+
 /**
  *
  * @author salaz
  */
-public class CrearProyectoView extends JFrame{
-       // Componentes del formulario
+public class CrearProyectoView extends JFrame {
+    // Componentes del formulario
+
     private JTextField txtNombre;
     private JTextArea txtDescripcion;
     private JList<String> listGruposDisponibles;
@@ -23,7 +26,7 @@ public class CrearProyectoView extends JFrame{
     private JButton btnQuitarGrupo;
     private JButton btnGuardar;
     private JButton btnCancelar;
-    
+
     // Para almacenar los IDs de los grupos (paralelo a los nombres)
     private java.util.List<Integer> idsGruposDisponibles;
     private java.util.List<Integer> idsGruposAsignados;
@@ -35,10 +38,10 @@ public class CrearProyectoView extends JFrame{
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout());
-        
+
         idsGruposDisponibles = new java.util.ArrayList<>();
         idsGruposAsignados = new java.util.ArrayList<>();
-        
+
         initComponentes();
     }
 
@@ -49,30 +52,27 @@ public class CrearProyectoView extends JFrame{
         panelPrincipal.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         panelPrincipal.setLayout(new BorderLayout(10, 10));
 
-        // ========== TÍTULO ==========
         JLabel lblTitulo = new JLabel("Crear Nuevo Proyecto", SwingConstants.CENTER);
         lblTitulo.setForeground(new Color(25, 118, 210));
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(5, 0, 15, 0));
         panelPrincipal.add(lblTitulo, BorderLayout.NORTH);
 
-        // ========== PANEL DE FORMULARIO ==========
         JPanel panelFormulario = new JPanel(new GridBagLayout());
         panelFormulario.setBackground(Color.WHITE);
         panelFormulario.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(200, 200, 200), 1, true),
-            BorderFactory.createEmptyBorder(20, 20, 20, 20)
+                new LineBorder(new Color(200, 200, 200), 1, true),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 8, 8, 8);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // ----- Campo: Nombre del Proyecto -----
         JLabel lblNombre = new JLabel("Nombre del Proyecto: *");
         lblNombre.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        gbc.gridx = 0; 
+        gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 2;
         panelFormulario.add(lblNombre, gbc);
@@ -83,7 +83,6 @@ public class CrearProyectoView extends JFrame{
         gbc.gridy = 1;
         panelFormulario.add(txtNombre, gbc);
 
-        // ----- Campo: Descripción -----
         JLabel lblDescripcion = new JLabel("Descripción:");
         lblDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         gbc.gridy = 2;
@@ -99,7 +98,6 @@ public class CrearProyectoView extends JFrame{
         gbc.gridy = 3;
         panelFormulario.add(scrollDescripcion, gbc);
 
-        // ----- Sección: Asignación de Grupos -----
         JLabel lblGrupos = new JLabel("Asignar Grupos al Proyecto: *");
         lblGrupos.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblGrupos.setForeground(new Color(25, 118, 210));
@@ -108,16 +106,15 @@ public class CrearProyectoView extends JFrame{
         panelFormulario.add(lblGrupos, gbc);
         gbc.insets = new Insets(8, 8, 8, 8);
 
-        // Panel para las dos listas y botones
         JPanel panelGrupos = new JPanel(new GridBagLayout());
         panelGrupos.setBackground(Color.WHITE);
         GridBagConstraints gbcG = new GridBagConstraints();
         gbcG.insets = new Insets(5, 5, 5, 5);
 
-        // Lista de grupos disponibles
         JLabel lblDisponibles = new JLabel("Grupos Disponibles:");
         lblDisponibles.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        gbcG.gridx = 0; gbcG.gridy = 0;
+        gbcG.gridx = 0;
+        gbcG.gridy = 0;
         panelGrupos.add(lblDisponibles, gbcG);
 
         modelGruposDisponibles = new DefaultListModel<>();
@@ -130,30 +127,31 @@ public class CrearProyectoView extends JFrame{
         gbcG.gridy = 1;
         panelGrupos.add(scrollDisponibles, gbcG);
 
-        // Botones para mover grupos
         JPanel panelBotonesGrupos = new JPanel(new GridLayout(2, 1, 5, 10));
         panelBotonesGrupos.setBackground(Color.WHITE);
-        
+
         btnAgregarGrupo = new JButton(">>");
         btnAgregarGrupo.setToolTipText("Agregar grupo(s) seleccionado(s)");
         btnAgregarGrupo.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnAgregarGrupo.setPreferredSize(new Dimension(60, 30));
-        
+
         btnQuitarGrupo = new JButton("<<");
         btnQuitarGrupo.setToolTipText("Quitar grupo(s) seleccionado(s)");
         btnQuitarGrupo.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnQuitarGrupo.setPreferredSize(new Dimension(60, 30));
-        
+
         panelBotonesGrupos.add(btnAgregarGrupo);
         panelBotonesGrupos.add(btnQuitarGrupo);
-        
-        gbcG.gridx = 1; gbcG.gridy = 1;
+
+        gbcG.gridx = 1;
+        gbcG.gridy = 1;
         panelGrupos.add(panelBotonesGrupos, gbcG);
 
         // Lista de grupos asignados
         JLabel lblAsignados = new JLabel("Grupos Asignados:");
         lblAsignados.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        gbcG.gridx = 2; gbcG.gridy = 0;
+        gbcG.gridx = 2;
+        gbcG.gridy = 0;
         panelGrupos.add(lblAsignados, gbcG);
 
         modelGruposAsignados = new DefaultListModel<>();
@@ -180,15 +178,15 @@ public class CrearProyectoView extends JFrame{
 
         panelPrincipal.add(panelFormulario, BorderLayout.CENTER);
 
-        // ========== PANEL DE BOTONES ==========
+        //PANEL DE BOTONES 
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
         panelBotones.setBackground(new Color(240, 248, 255));
-        
+
         btnCancelar = new JButton("Cancelar");
         btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         btnCancelar.setPreferredSize(new Dimension(100, 35));
         btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         btnGuardar = new JButton("Crear Proyecto");
         btnGuardar.setBackground(new Color(25, 118, 210));
         btnGuardar.setForeground(Color.WHITE);
@@ -196,21 +194,21 @@ public class CrearProyectoView extends JFrame{
         btnGuardar.setFocusPainted(false);
         btnGuardar.setPreferredSize(new Dimension(140, 35));
         btnGuardar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
 
         panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
-        
+
         add(panelPrincipal, BorderLayout.CENTER);
-        
+
         // Configurar eventos internos de mover grupos
-      //  configurarEventosGrupos();
+        //  configurarEventosGrupos();
     }
-    
-    /**
-     * Configura los eventos para mover grupos entre listas
-     /*
+
+    /*
+    // Configura los eventos para mover grupos entre listas
+     
     private void configurarEventosGrupos() {
         // Agregar grupos seleccionados
         btnAgregarGrupo.addActionListener(e -> {
@@ -230,8 +228,8 @@ public class CrearProyectoView extends JFrame{
                 idsGruposDisponibles.remove(idx);
             }
         });
-        */
-        // Quitar grupos seleccionados
+     */
+    // Quitar grupos seleccionados
     /*
         btnQuitarGrupo.addActionListener(e -> {
             int[] indices = listGruposAsignados.getSelectedIndices();
@@ -249,8 +247,8 @@ public class CrearProyectoView extends JFrame{
                 idsGruposAsignados.remove(idx);
             }
         });
-        */
-        // Doble clic para agregar
+     */
+    // Doble clic para agregar
     /*
         listGruposDisponibles.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -271,8 +269,6 @@ public class CrearProyectoView extends JFrame{
             }
         });
     }
-    */
-    // ==================== GETTERS ====================
     
     public JTextField getTxtNombre() { 
         return txtNombre; 
@@ -305,14 +301,8 @@ public class CrearProyectoView extends JFrame{
     public java.util.List<Integer> getIdsGruposAsignados() {
         return idsGruposAsignados;
     }
-    */
-    // ==================== MÉTODOS DE UTILIDAD ====================
-    
-    /**
-     * Carga los grupos disponibles en la lista
-     * @param grupos Lista de objetos Group
      */
-    /*
+ /*
     public void cargarGruposDisponibles(List<com.mycompany.teamcode_kanbanpro.model.Group> grupos) {
         modelGruposDisponibles.clear();
         idsGruposDisponibles.clear();
@@ -326,18 +316,12 @@ public class CrearProyectoView extends JFrame{
             }
         }
     }
-    
-    /**
-     * Obtiene los IDs de los grupos asignados al proyecto
-     * @return Lista de IDs de grupos
-     */
+
     /*
     public java.util.List<Integer> getGruposAsignadosIds() {
         return new java.util.ArrayList<>(idsGruposAsignados);
     }
     
-    /**
-     * Limpia todos los campos del formulario
      */
     public void limpiarCampos() {
         txtNombre.setText("");
@@ -354,11 +338,11 @@ public class CrearProyectoView extends JFrame{
         txtNombre.requestFocus();
     }
 }
-    /**
-     * Verifica si hay al menos un grupo asignado
-     */
-    /*
+/**
+ * Verifica si hay al menos un grupo asignado
+ */
+/*
     public boolean tieneGruposAsignados() {
         return !idsGruposAsignados.isEmpty();
     }
-    */
+ */

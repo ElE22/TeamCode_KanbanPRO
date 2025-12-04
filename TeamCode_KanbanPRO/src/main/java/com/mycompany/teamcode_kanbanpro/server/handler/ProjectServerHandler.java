@@ -16,14 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Handler del servidor para operaciones de Proyectos
- * 
- * Maneja:
- * - Obtener proyectos por usuario
- * - Crear nuevo proyecto
- * - Actualizar proyecto
- * - Eliminar proyecto
- * 
  * @author Emanuel
  */
 public class ProjectServerHandler {
@@ -80,16 +72,16 @@ public class ProjectServerHandler {
         }
     }
     
-    /**
-     * Crea un nuevo proyecto con sus grupos asignados
-     */
+    
+     //Crea un nuevo proyecto con sus grupos asignados
+     
     public Response handleCreateProject(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
             
             System.out.println("[ProjectHandler] Solicitud de creación de proyecto recibida");
             
-            // ========== 1. EXTRAER DATOS ==========
+            // EXTRAER DATOS
             String nombre = (String) p.get("nombre");
             String descripcion = (String) p.get("descripcion");
             Integer creadorId = (Integer) p.get("creadorId");
@@ -102,7 +94,7 @@ public class ProjectServerHandler {
             System.out.println("  - Creador ID: " + creadorId);
            // System.out.println("  - Grupos IDs: " + gruposIds);
             
-            // ========== 2. VALIDACIONES ==========
+            // VALIDACIONES
             
             if (nombre == null || nombre.trim().isEmpty()) {
                 return new Response(false, "El nombre del proyecto es obligatorio");
@@ -136,7 +128,7 @@ public class ProjectServerHandler {
                 }
             }
             
-            // ========== 3. CREAR PROYECTO ==========
+            // CREAR PROYECTO 
             Project newProject = new Project();
             newProject.setIdUsuarioCreador(creadorId);
             newProject.setNombre(nombre);
@@ -152,7 +144,7 @@ public class ProjectServerHandler {
             
             System.out.println("[ProjectHandler] Proyecto creado con ID: " + projectId);
             /*
-            // ========== 4. ASIGNAR GRUPOS AL PROYECTO ==========
+            // ASIGNAR GRUPOS AL PROYECTO
             System.out.println("[ProjectHandler] Asignando grupos al proyecto...");
             
             int gruposAsignados = 0;
@@ -173,10 +165,10 @@ public class ProjectServerHandler {
                     "Error al asignar grupos al proyecto. El proyecto no fue creado.");
             }
             */
-            // ========== 5. CREAR COLUMNAS KANBAN POR DEFECTO ==========
+            // CREAR COLUMNAS KANBAN POR DEFECTO
             crearColumnasKanbanPorDefecto(projectId);
             
-            // ========== 6. PREPARAR RESPUESTA ==========
+            // PREPARAR RESPUESTA 
             newProject.setIdProyecto(projectId);
             
             Response r = new Response(true, 
@@ -198,9 +190,8 @@ public class ProjectServerHandler {
         }
     }
     
-    /**
-     * Crea las columnas Kanban por defecto para un proyecto nuevo
-     */
+    
+     //Crea las columnas Kanban por defecto para un proyecto nuevo
     private void crearColumnasKanbanPorDefecto(int projectId) {
         try {
             // Usar ColumnDAO si existe, o ejecutar SQL directo
@@ -224,9 +215,8 @@ public class ProjectServerHandler {
         }
     }
     
-    /**
-     * Actualiza un proyecto existente
-     */
+    
+    //Actualiza un proyecto existente
     public Response handleUpdateProject(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
@@ -264,9 +254,8 @@ public class ProjectServerHandler {
         }
     }
     
-    /**
-     * Elimina un proyecto
-     */
+    
+    //Elimina un proyecto
     public Response handleDeleteProject(int projectId) {
         try {
             // Verificar que existe
