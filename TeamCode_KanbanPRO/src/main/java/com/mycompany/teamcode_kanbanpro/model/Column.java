@@ -1,23 +1,23 @@
 
 package com.mycompany.teamcode_kanbanpro.model;
 
+import java.io.Serializable;
+
 /**
  *
  * @author Emanuel
  */
-public class Column {
+public class Column implements Serializable {
     
     private int idColumna;
     private int idProyecto;
     private String nombre;
     private int orden;
-    private String color; // Almacena el color en formato hexadecimal (#RRGGBB)
+    private String color;
 
-    // Constructor vacío (útil para frameworks de serialización como Gson/Jackson)
     public Column() {
     }
 
-    // Constructor completo (útil para crear objetos manualmente o en pruebas)
     public Column(int idColumna, int idProyecto, String nombre, int orden, String color) {
         this.idColumna = idColumna;
         this.idProyecto = idProyecto;
@@ -25,8 +25,6 @@ public class Column {
         this.orden = orden;
         this.color = color;
     }
-
-    // --- Getters y Setters ---
 
     public int getIdColumna() {
         return idColumna;

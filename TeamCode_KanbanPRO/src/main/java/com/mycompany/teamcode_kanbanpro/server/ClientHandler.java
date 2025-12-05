@@ -6,17 +6,21 @@ package com.mycompany.teamcode_kanbanpro.server;
 
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
+import com.mycompany.teamcode_kanbanpro.dao.ColumnDAO;
 import com.mycompany.teamcode_kanbanpro.dao.GroupDAO;
 import com.mycompany.teamcode_kanbanpro.dao.ProjectDAO;
 import com.mycompany.teamcode_kanbanpro.dao.RoleDAO;
 import com.mycompany.teamcode_kanbanpro.dao.SprintDAO;
+import com.mycompany.teamcode_kanbanpro.dao.TaskDAO;
 import com.mycompany.teamcode_kanbanpro.dao.UserDAO;
 import com.mycompany.teamcode_kanbanpro.model.Role;
 import com.mycompany.teamcode_kanbanpro.model.User;
+import com.mycompany.teamcode_kanbanpro.server.handler.ColumnServerHandler;
 //import com.mycompany.teamcode_kanbanpro.server.handler.GroupServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.ProjectServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.RoleServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.SprintServerHandler;
+import com.mycompany.teamcode_kanbanpro.server.handler.TaskServerHandler;
 import com.mycompany.teamcode_kanbanpro.server.handler.UserServerHandler;
 import com.mycompany.teamcode_kanbanpro.util.BCryptUtil;
 
@@ -42,12 +46,16 @@ public class ClientHandler implements Runnable {
     private final ProjectDAO projectDAO;
     private final SprintDAO sprintDAO;
     private final GroupDAO groupDAO;
+    private final ColumnDAO columnDAO;
+    private final TaskDAO taskDAO;
     
     // Handlers
     private final UserServerHandler userHandler;
     private final RoleServerHandler roleHandler;
     private final ProjectServerHandler projectHandler;
     private final SprintServerHandler sprintHandler;
+    private final ColumnServerHandler columnHandler;
+    private final TaskServerHandler taskHandler;
     //private final GroupServerHandler groupHandler;
     
     public ClientHandler(Socket socket) {
@@ -59,12 +67,15 @@ public class ClientHandler implements Runnable {
         this.projectDAO = new ProjectDAO();
         this.sprintDAO = new SprintDAO();
         this.groupDAO = new GroupDAO();
-        
+        this.columnDAO = new ColumnDAO();
+        this.taskDAO = new TaskDAO();
         // Inicializar Handlers
         this.userHandler = new UserServerHandler(userDAO, roleDAO);
         this.roleHandler = new RoleServerHandler(roleDAO);
         this.projectHandler = new ProjectServerHandler(projectDAO, userDAO); //grupoDAO
         this.sprintHandler = new SprintServerHandler(sprintDAO);
+        this.columnHandler = new ColumnServerHandler(columnDAO);
+        this.taskHandler = new TaskServerHandler(taskDAO);
        // this.groupHandler = new GroupServerHandler(groupDAO);
     }
 
@@ -184,11 +195,11 @@ public class ClientHandler implements Runnable {
                         (int) req.getPayload().get("sprintId"));
                 
                 // ==================== TAREAS (TODO: Implementar) ====================
-                case "gettasksbyproject":
-                    return new Response(false, "Funcionalidad de tareas pendiente de implementar");
+                case "getcolumnskanbanboard":
+                    return columnHandler.handleGetColumns((int) req.getPayload().get("projectId"));
                     
                 case "gettasksbysprint":
-                    return new Response(false, "Funcionalidad de tareas pendiente de implementar");
+                    return taskHandler.handleGeTasksBySprintId((int) req.getPayload().get("sprintId"));
                     
                 case "createtask":
                     return new Response(false, "Funcionalidad de tareas pendiente de implementar");

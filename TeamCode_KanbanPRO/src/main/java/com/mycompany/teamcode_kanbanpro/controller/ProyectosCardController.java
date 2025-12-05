@@ -7,6 +7,7 @@ import com.mycompany.teamcode_kanbanpro.model.Project;
 import com.mycompany.teamcode_kanbanpro.model.Sprint;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
 import com.mycompany.teamcode_kanbanpro.view.CrearSprintView;
+import com.mycompany.teamcode_kanbanpro.controller.KanbanBoardController;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -37,6 +38,7 @@ public class ProyectosCardController {
     
     // Variable para almacenar el ID del proyecto actualmente seleccionado
     private int proyectoSeleccionadoId = -1;
+    private int sprintSeleccionadoId = -1;
 
     /**
      * Constructor del controlador
@@ -82,17 +84,32 @@ public class ProyectosCardController {
                 }
             }
         });
-        
-        // Evento: Selección con teclado en tabla de proyectos
-        view.getTablaProyectos().getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                int filaSeleccionada = view.getTablaProyectos().getSelectedRow();
-                if (filaSeleccionada != -1) {
-                    proyectoSeleccionadoId = (Integer) modeloProyectos.getValueAt(filaSeleccionada, 0);
-                    cargarSprintsParaProyecto(proyectoSeleccionadoId);
-                }
+        view.getTablaSprints().addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            JTable tabla = (JTable) e.getSource();
+            int filaSeleccionada = tabla.getSelectedRow();
+
+            if (filaSeleccionada != -1) {
+                // Usar el modeloSprints para obtener el ID
+                sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0); 
+                System.out.println("Sprint seleccionado ID: " + sprintSeleccionadoId);
+                new KanbanBoardController(connector,sprintSeleccionadoId, proyectoSeleccionadoId  );
             }
-        });
+        }
+    });
+       view.getTablaSprints().getSelectionModel().addListSelectionListener(e -> {
+        // Asegurarse de que el evento no está siendo ajustado (previene disparos múltiples)
+        if (!e.getValueIsAdjusting()) { 
+            int filaSeleccionada = view.getTablaSprints().getSelectedRow();
+            if (filaSeleccionada != -1) {
+                // Usar modeloSprints y solo actualizar la variable de ID
+                sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0);
+                System.out.println("Sprint seleccionado ID (por teclado/modelo): " + sprintSeleccionadoId);
+                // ELIMINADO: Ya NO se llama a cargarSprintsParaProyecto(proyectoSeleccionadoId);
+            }
+        }
+    });
     }
 
     /**
@@ -296,12 +313,10 @@ public class ProyectosCardController {
             fila[4] = s.getFechaFin() != null ? s.getFechaFin().toString() : "";
             
             modeloSprints.addRow(fila);
-            
-            // Debug
-            System.out.println("Sprint agregado: ID=" + s.getIdSprint() + 
-                             ", Nombre=" + s.getNombre() + 
-                             ", Estado=" + s.getNombreEstado());
+           
         }
+        view.getTablaSprints().clearSelection();
+    sprintSeleccionadoId = -1;
     }
     
     /**

@@ -34,6 +34,40 @@ public class TaskDAO {
             "JOIN usuario uc ON t.creado_por = uc.id_usuario " + // creador
             "LEFT JOIN sprint s ON t.id_sprint = s.id_sprint " + // puede ser null
             "LEFT JOIN tarea tp ON t.id_tarea_padre = tp.id_tarea "; // puede ser null (subtarea)
+    
+    private static final String BASE_SELECT_WITH_GROUPS = """
+        SELECT 
+            t.id_tarea,
+            t.id_proyecto,
+            p.nombre AS nombre_proyecto,
+            t.id_sprint,
+            s.nombre AS nombre_sprint,
+            t.id_columna,
+            ck.nombre AS nombre_columna,
+            t.id_prioridad,
+            pr.nombre AS nombre_prioridad,
+            t.titulo,
+            t.descripcion,
+            t.fecha_creacion,
+            t.fecha_vencimiento,
+            t.fecha_modificacion,
+            t.creado_por,
+            uc.nombre AS nombre_creador,
+            t.id_tarea_padre,
+            tp.titulo AS titulo_tarea_padre,
+            GROUP_CONCAT(g.nombre SEPARATOR ', ') AS grupos
+        FROM tarea t
+        JOIN proyecto p ON t.id_proyecto = p.id_proyecto
+        JOIN columna_kanban ck ON t.id_columna = ck.id_columna
+        JOIN prioridad pr ON t.id_prioridad = pr.id_prioridad
+        JOIN usuario uc ON t.creado_por = uc.id_usuario
+        LEFT JOIN sprint s ON t.id_sprint = s.id_sprint
+        LEFT JOIN tarea tp ON t.id_tarea_padre = tp.id_tarea
+        LEFT JOIN proyecto_grupo pg ON t.id_proyecto = pg.id_proyecto
+        LEFT JOIN grupo g ON pg.id_grupo = g.id_grupo
+        WHERE t.id_sprint = ?
+        GROUP BY t.id_tarea
+    """;
             
     // consultas CRUD
     private static final String INSERT_TASK = 
@@ -45,6 +79,8 @@ public class TaskDAO {
             "UPDATE tarea SET id_sprint = ?, id_columna = ?, id_prioridad = ?, titulo = ?, descripcion = ?, fecha_vencimiento = ?, id_tarea_padre = ? " +
             "WHERE id_tarea = ?";
     private static final String DELETE_TASK = "DELETE FROM tarea WHERE id_tarea = ?";
+    
+    private static final String SELECT_TASKS_BY_SPRINT_WITH_GROUPS = BASE_SELECT_WITH_GROUPS + "ORDER BY t.id_tarea";
 
     // consultas de asignacion (usuario_tarea)
     private static final String ASSIGN_USER_TO_TASK = "INSERT INTO usuario_tarea (id_usuario, id_tarea) VALUES (?, ?)";
@@ -75,7 +111,7 @@ public class TaskDAO {
         task.setNombrePrioridad(rs.getString("nombre_prioridad"));
         task.setNombreCreador(rs.getString("nombre_creador"));
         task.setTituloTareaPadre(rs.getString("titulo_tarea_padre")); // puede ser null
-
+        task.setGruposAsignados(rs.getString("grupos"));
         return task;
     }
 
@@ -238,5 +274,27 @@ public class TaskDAO {
             e.printStackTrace();
             return false;
         }
+    }
+    
+    public List<Task> selectTasksBySprintId(int sprintId) {
+        List<Task> tasks = new ArrayList<>();
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_TASKS_BY_SPRINT_WITH_GROUPS)) {
+            
+            preparedStatement.setInt(1, sprintId);
+            
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                while (rs.next()) {
+                    Task task = RowToTask(rs);
+                    tasks.add(task);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error al obtener tareas por Sprint ID: " + sprintId);
+            e.printStackTrace();
+        }
+        return tasks;
     }
 }

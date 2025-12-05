@@ -40,6 +40,7 @@ public class KanbanTaskPanel extends JPanel {
         
         setBackground(new Color(248, 249, 250));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        setOpaque(true);
     }
 
     private void createTaskComponents() {
@@ -121,7 +122,7 @@ public class KanbanTaskPanel extends JPanel {
     }
 
     private Color getPriorityColor(String priority) {
-        return switch (priority) {
+        return switch (priority.toUpperCase()) {
             case "ALTA" -> new Color(255, 64, 129);   // Rojo/Rosa
             case "MEDIA" -> new Color(255, 179, 0);   // Naranja/Amarillo
             case "BAJA" -> new Color(30, 136, 229);   // Azul

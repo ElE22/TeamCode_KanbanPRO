@@ -5,7 +5,6 @@ import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.model.Task; 
 import com.mycompany.teamcode_kanbanpro.model.Column; 
-import com.mycompany.teamcode_kanbanpro.model.Group; 
 import com.mycompany.teamcode_kanbanpro.view.KanbanBoardView;
 import com.mycompany.teamcode_kanbanpro.view.KanbanTaskPanel;
 import com.mycompany.teamcode_kanbanpro.view.KanbanColumnPanel;
@@ -13,7 +12,6 @@ import com.mycompany.teamcode_kanbanpro.view.KanbanColumnPanel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
 
 /**
@@ -24,13 +22,14 @@ public class KanbanBoardController {
     
     private final KanbanBoardView view;
     private final ClientConnector connector;
-    private final String currentSprintId; 
-    
+    private final int currentSprintId; 
+    private final int currentProjectId; 
     // Asume que la vista ya ha sido creada y se le pasa al constructor
-    public KanbanBoardController(KanbanBoardView view, ClientConnector connector, String sprintId) {
-        this.view = view;
+    public KanbanBoardController( ClientConnector connector, int sprintId, int pId) {
+        this.view = new KanbanBoardView();
         this.connector = connector;
         this.currentSprintId = sprintId;
+        this.currentProjectId = pId;
         
         // Se establecen las referencias
         view.setController(this); // La vista necesita una referencia al Controller (ver modificaciones)
@@ -38,6 +37,8 @@ public class KanbanBoardController {
         // El controller inicia el proceso de carga
         loadKanbanBoard();
         attachListeners();
+        
+        this.view.setVisible(true);
     }
     
     private void loadKanbanBoard() {
@@ -46,11 +47,7 @@ public class KanbanBoardController {
     }
     
     private void attachListeners() {
-        // Por ahora, solo necesitamos que el ColumnTransferHandler llame al método 
-        // handleTaskMoved cuando el Drag & Drop finalice, lo cual se hace a través 
-        // de la referencia al controller que le pasamos a la vista en el constructor.
         
-        // Si tuvieras un botón "Nueva Tarea", iría aquí:
         view.getCreateTaskButton().addActionListener(e -> handleNewTask());
     }
     
@@ -65,31 +62,27 @@ public class KanbanBoardController {
      */
     private void loadColumns() {
         try {
-            // 1. Preparar la Solicitud
             Request req = new Request();
-            req.setAction("getColumnsKanbanBoard");
+            req.setAction("getcolumnskanbanboard");
             Map<String, Object> payload = new HashMap<>();
-            payload.put("sprintId", currentSprintId);
+            payload.put("projectId", currentProjectId);
             req.setPayload(payload);
-            
-            // 2. Enviar y Recibir Respuesta
             Response resp = connector.sendRequest(req);
             
+            
             if (resp.isSuccess()) {
-                @SuppressWarnings("unchecked")
-                // Asumimos que el conector deserializa correctamente a List<Column>
-                List<Column> columns = (List<Column>) resp.getData(); 
-                
-                if (columns == null || columns.isEmpty()) {
+                List<Column> columnsServer = (List<Column>) resp.getData(); 
+              
+                if (columnsServer == null || columnsServer.isEmpty()) {
                     JOptionPane.showMessageDialog(view, "No se encontraron columnas para el sprint.", "Advertencia", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                
-                // 3. Crear y agregar los paneles a la vista
-                for (Column columnData : columns) {
-                    // << IMPORTANTE: Pasamos el modelo Column al constructor de KanbanColumnPanel (VER MODIFICACIONES)
+                 // setup de las columnas que va ocupar el boardPanel
+                view.setLayoutBoard(columnsServer.size());
+               
+                for (Column columnData : columnsServer) {
                     KanbanColumnPanel columnPanel = new KanbanColumnPanel(columnData, view); 
-                    view.addColumn(columnPanel); 
+                    view.addColumns(columnPanel); 
                 }
                 
             } else {
@@ -106,33 +99,25 @@ public class KanbanBoardController {
      */
     private void loadTasks() {
         try {
-            // 1. Preparar la Solicitud
             Request req = new Request();
-            req.setAction("getTasksKanbanBoard");
+            req.setAction("gettasksbysprint");
             Map<String, Object> payload = new HashMap<>();
             payload.put("sprintId", currentSprintId);
             req.setPayload(payload);
             
-            // 2. Enviar y Recibir Respuesta
             Response resp = connector.sendRequest(req);
-
             if (resp.isSuccess()) {
                 @SuppressWarnings("unchecked")
                 List<Task> tasks = (List<Task>) resp.getData();
 
                 if (tasks == null || tasks.isEmpty()) { return; }
-
-                // 3. Distribuir cada tarea
                 for (Task taskData : tasks) {
-                    
-                    // Crear el componente visual de la tarea
-                    // << IMPORTANTE: Pasamos el modelo Task al constructor de KanbanTaskPanel (VER MODIFICACIONES)
                     KanbanTaskPanel taskPanel = new KanbanTaskPanel(
                         taskData, // Pasamos el objeto Task completo
                         view
                     );
                     
-                    // Encontrar la columna destino en la vista (usamos el nombre de la columna que viene en el modelo)
+                    // Encontrar la columna destino en la vista 
                     KanbanColumnPanel targetColumn = view.findColumnByName(taskData.getNombreColumna());
                     
                     if (targetColumn != null) {
@@ -141,8 +126,6 @@ public class KanbanBoardController {
                         System.err.println("Advertencia: Columna '" + taskData.getNombreColumna() + "' no encontrada para la tarea " + taskData.getTitulo());
                     }
                 }
-                
-                // 4. Refrescar la vista para mostrar los cambios
                 view.revalidate();
                 view.repaint();
 
