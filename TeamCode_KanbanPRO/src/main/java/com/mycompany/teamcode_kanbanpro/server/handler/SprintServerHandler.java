@@ -14,13 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Handler del servidor para operaciones relacionadas con Sprints
- * 
- * Maneja las solicitudes del cliente para:
- * - Obtener sprints por proyecto
- * - Crear nuevos sprints
- * - (Futuro) Actualizar y eliminar sprints
- * 
  * @author Emanuel
  */
 public class SprintServerHandler {
@@ -31,12 +24,6 @@ public class SprintServerHandler {
         this.sprintDAO = sprintDAO;
     }
     
-    /**
-     * Obtiene todos los sprints de un proyecto específico
-     * 
-     * @param projectID ID del proyecto
-     * @return Response con la lista de sprints o mensaje de error
-     */
     public Response handleGetSprintByProject(int projectID) {
         try {
             System.out.println("[SprintHandler] Obteniendo sprints para proyecto ID: " + projectID);
@@ -71,19 +58,14 @@ public class SprintServerHandler {
         }
     }
     
-    /**
-     * Crea un nuevo sprint en el proyecto especificado
-     * 
-     * @param req Request con los datos del sprint
-     * @return Response indicando éxito o error
-     */
+
     public Response handleCreateSprint(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
             
             System.out.println("[SprintHandler] Solicitud de creación de sprint recibida");
             
-            // ========== 1. EXTRAER DATOS DEL PAYLOAD ==========
+            // EXTRAER DATOS DEL PAYLOAD
             Integer projectId = (Integer) p.get("projectId");
             String nombre = (String) p.get("nombre");
             String descripcion = (String) p.get("descripcion");
@@ -96,7 +78,7 @@ public class SprintServerHandler {
             System.out.println("  - fechaInicio: " + fechaInicioStr);
             System.out.println("  - fechaFin: " + fechaFinStr);
             
-            // ========== 2. VALIDACIONES ==========
+            // VALIDACIONES
             
             // Validar projectId
             if (projectId == null || projectId <= 0) {
@@ -127,7 +109,7 @@ public class SprintServerHandler {
                 return new Response(false, "La fecha de fin es obligatoria");
             }
             
-            // ========== 3. CONVERTIR STRINGS A SQL DATE ==========
+            //CONVERTIR STRINGS A SQL DATE
             Date sqlFechaInicio;
             Date sqlFechaFin;
             
@@ -140,13 +122,13 @@ public class SprintServerHandler {
                     "Formato de fecha inválido. Use yyyy-MM-dd (ejemplo: 2024-12-31)");
             }
             
-            // ========== 4. VALIDAR LÓGICA DE FECHAS ==========
+            // VALIDAR LÓGICA DE FECHAS
             if (sqlFechaFin.before(sqlFechaInicio)) {
                 return new Response(false, 
                     "La fecha de fin debe ser igual o posterior a la fecha de inicio");
             }
             
-            // ========== 5. CREAR OBJETO SPRINT ==========
+            // CREAR OBJETO SPRINT 
             Sprint newSprint = new Sprint();
             newSprint.setIdProyecto(projectId);
             newSprint.setIdEstado(1); // 1 = Planificado (estado inicial por defecto)
@@ -158,7 +140,7 @@ public class SprintServerHandler {
             
             System.out.println("[SprintHandler] Insertando sprint en BD...");
             
-            // ========== 6. INSERTAR EN BD ==========
+            // INSERTAR EN BD 
             int sprintId = sprintDAO.insertSprint(newSprint);
             
             if (sprintId > 0) {
@@ -186,12 +168,7 @@ public class SprintServerHandler {
         }
     }
     
-    /**
-     * Actualiza el estado de un sprint
-     * 
-     * @param req Request con sprintId y nuevoEstadoId
-     * @return Response indicando éxito o error
-     */
+   
     public Response handleUpdateSprintStatus(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
@@ -222,12 +199,7 @@ public class SprintServerHandler {
         }
     }
     
-    /**
-     * Elimina un sprint
-     * 
-     * @param sprintId ID del sprint a eliminar
-     * @return Response indicando éxito o error
-     */
+    
     public Response handleDeleteSprint(int sprintId) {
         try {
             boolean eliminado = sprintDAO.deleteSprint(sprintId);

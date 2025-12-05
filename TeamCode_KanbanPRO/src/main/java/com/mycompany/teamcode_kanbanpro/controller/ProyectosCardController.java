@@ -20,13 +20,6 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Controlador para la gestión de Proyectos y Sprints
- * 
- * CORREGIDO:
- * - Manejo correcto del botón Crear Sprint
- * - Validación de proyecto seleccionado
- * - Callback para refrescar la tabla después de crear sprint
- * 
  * @author Emanuel
  */
 public class ProyectosCardController {
@@ -35,16 +28,11 @@ public class ProyectosCardController {
     private ClientConnector connector;
     private DefaultTableModel modeloProyectos;
     private DefaultTableModel modeloSprints;
-    
+
     // Variable para almacenar el ID del proyecto actualmente seleccionado
     private int proyectoSeleccionadoId = -1;
     private int sprintSeleccionadoId = -1;
 
-    /**
-     * Constructor del controlador
-     * @param view La vista de proyectos
-     * @param connector El conector al servidor
-     */
     public ProyectosCardController(ProyectosView view, ClientConnector connector) {
         this.view = view;
         this.connector = connector;
@@ -52,21 +40,16 @@ public class ProyectosCardController {
         cargarProyectosIniciales();
     }
 
-    /**
-     * Inicializa todos los listeners y eventos
-     */
+    //Inicializa todos los listeners y eventos
     private void initialize() {
         // Obtener referencias a los modelos de las tablas
         modeloProyectos = view.getModeloProyectos();
         modeloSprints = view.getModeloSprints();
 
-        // Evento: Botón crear proyecto
         view.getBtnCrearProyecto().addActionListener(e -> crearNuevoProyecto());
 
-        // Evento: Botón crear sprint (CORREGIDO - ahora sí pasa por el controlador)
         view.getBtnCrearSprint().addActionListener(e -> mostrarFormularioCrearSprint());
 
-        // Evento: Click en tabla de proyectos para cargar sprints
         view.getTablaProyectos().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -76,10 +59,10 @@ public class ProyectosCardController {
                 if (filaSeleccionada != -1) {
                     // Obtener el ID del proyecto seleccionado
                     proyectoSeleccionadoId = (Integer) modeloProyectos.getValueAt(filaSeleccionada, 0);
-                    
+
                     // Cargar los sprints de ese proyecto
                     cargarSprintsParaProyecto(proyectoSeleccionadoId);
-                    
+
                     System.out.println("Proyecto seleccionado ID: " + proyectoSeleccionadoId);
                 }
             }
@@ -112,32 +95,27 @@ public class ProyectosCardController {
     });
     }
 
-    /**
-     * Muestra el formulario para crear un nuevo sprint
-     * CORREGIDO: Validación completa y paso del callback
-     */
+    //Muestra el formulario para crear un nuevo sprint
     private void mostrarFormularioCrearSprint() {
-        // 1. Verificar que hay un proyecto seleccionado
+        //Verificar que hay un proyecto seleccionado
         int filaSeleccionada = view.getTablaProyectos().getSelectedRow();
 
         if (filaSeleccionada == -1 || proyectoSeleccionadoId == -1) {
             JOptionPane.showMessageDialog(view,
-                    "Debe seleccionar un proyecto antes de crear un sprint.\n\n" +
-                    "Haga clic en un proyecto de la tabla de la izquierda.",
+                    "Debe seleccionar un proyecto antes de crear un sprint.\n\n"
+                    + "Haga clic en un proyecto de la tabla de la izquierda.",
                     "Proyecto no seleccionado",
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        // 2. Obtener el nombre del proyecto para mostrar en el formulario (opcional)
+        //Obtener el nombre del proyecto para mostrar en el formulario (opcional)
         String nombreProyecto = (String) modeloProyectos.getValueAt(filaSeleccionada, 1);
 
-        // 3. Crear la vista del formulario
+        //Crear la vista del formulario
         CrearSprintView formulario = new CrearSprintView();
         formulario.setTitle("Crear Sprint para: " + nombreProyecto);
 
-        // 4. Crear el controlador del sprint con callback para refrescar
-        // El callback se ejecutará después de crear el sprint exitosamente
         new SprintController(
                 formulario,
                 connector,
@@ -149,20 +127,16 @@ public class ProyectosCardController {
                 }
         );
 
-        // 5. Mostrar el formulario
         formulario.setVisible(true);
     }
 
-    /**
-     * Carga los sprints de un proyecto específico desde el servidor
-     * @param projectID ID del proyecto
-     */
+    //Carga los sprints de un proyecto específico desde el servidor
     private void cargarSprintsParaProyecto(int projectID) {
         try {
-            // Construir la solicitud
+
             Request req = new Request();
             req.setAction("getSprintsByProject");
-            
+
             Map<String, Object> payload = new HashMap<>();
             payload.put("projectId", projectID);
             req.setPayload(payload);
@@ -174,13 +148,13 @@ public class ProyectosCardController {
                 @SuppressWarnings("unchecked")
                 List<Sprint> listSprints = (List<Sprint>) resp.getData();
                 actualizarTablaSprints(listSprints);
-                
+
                 System.out.println("Sprints cargados: " + (listSprints != null ? listSprints.size() : 0));
             } else {
                 JOptionPane.showMessageDialog(view,
                         "Error al cargar sprints: " + resp.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
-                // Limpiar la tabla de sprints en caso de error
+
                 modeloSprints.setRowCount(0);
             }
         } catch (Exception e) {
@@ -191,81 +165,72 @@ public class ProyectosCardController {
         }
     }
 
-    /**
-     * Muestra el formulario para crear un nuevo proyecto
-     */
+    //Muestra el formulario para crear un nuevo proyecto
     private void crearNuevoProyecto() {
-        // Verificar que el usuario tenga rol de Scrum Master
+
         String userRole = connector.getUserRole();
         if (userRole == null || !userRole.equalsIgnoreCase("Scrum Master")) {
             JOptionPane.showMessageDialog(view,
-                "Solo los usuarios con rol de Scrum Master pueden crear proyectos.",
-                "Permiso denegado",
-                JOptionPane.WARNING_MESSAGE);
+                    "Solo los usuarios con rol de Scrum Master pueden crear proyectos.",
+                    "Permiso denegado",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
-        
+
         // Crear la vista del formulario
-        com.mycompany.teamcode_kanbanpro.view.CrearProyectoView formulario = 
-            new com.mycompany.teamcode_kanbanpro.view.CrearProyectoView();
-        
+        com.mycompany.teamcode_kanbanpro.view.CrearProyectoView formulario
+                = new com.mycompany.teamcode_kanbanpro.view.CrearProyectoView();
+
         // Crear el controlador con callback para refrescar
         new ProyectoController(
-            formulario,
-            connector,
-            () -> {
-                // Callback: refrescar la tabla de proyectos
-                System.out.println("Proyecto creado, refrescando tabla...");
-                cargarProyectosIniciales();
-            }
+                formulario,
+                connector,
+                () -> {
+
+                    System.out.println("Proyecto creado, refrescando tabla...");
+                    cargarProyectosIniciales();
+                }
         );
-        
-        // Mostrar el formulario
+
         formulario.setVisible(true);
     }
 
-    /**
-     * Carga los proyectos del usuario actual desde el servidor
-     */
-    
+    //Carga los proyectos del usuario actual desde el servidor 
     public void cargarProyectosIniciales() {
         try {
             Request req = new Request();
             req.setAction("getProjectsByUser");
-            
+
             Map<String, Object> payload = new HashMap<>();
             payload.put("userId", connector.getUserID());
             req.setPayload(payload);
-            
+
             Response resp = connector.sendRequest(req);
-            
+
             if (resp.isSuccess()) {
                 @SuppressWarnings("unchecked")
                 List<Project> listProjects = (List<Project>) resp.getData();
                 actualizarTablaProyectos(listProjects);
-                
+
                 // Limpiar la tabla de sprints al cargar proyectos
                 modeloSprints.setRowCount(0);
                 proyectoSeleccionadoId = -1;
-                
+
                 System.out.println("Proyectos cargados: " + (listProjects != null ? listProjects.size() : 0));
             } else {
-                JOptionPane.showMessageDialog(view, 
-                        "Error al cargar proyectos: " + resp.getMessage(), 
+                JOptionPane.showMessageDialog(view,
+                        "Error al cargar proyectos: " + resp.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(view, 
-                    "Error de comunicación con el servidor:\n" + e.getMessage(), 
+            JOptionPane.showMessageDialog(view,
+                    "Error de comunicación con el servidor:\n" + e.getMessage(),
                     "Error de Conexión", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    /**
-     * Actualiza la tabla de proyectos con los datos recibidos
-     * @param proyectos Lista de proyectos
-     */
+    //Actualiza la tabla de proyectos con los datos recibidos
     private void actualizarTablaProyectos(List<Project> proyectos) {
         // Limpiar la tabla
         modeloProyectos.setRowCount(0);
@@ -289,14 +254,10 @@ public class ProyectosCardController {
         }
     }
 
-    /**
-     * Actualiza la tabla de sprints con los datos recibidos
-     * @param sprints Lista de sprints
-     */
     private void actualizarTablaSprints(List<Sprint> sprints) {
-        // Limpiar la tabla
+
         modeloSprints.setRowCount(0);
-        
+
         if (sprints == null || sprints.isEmpty()) {
             System.out.println("No se encontraron sprints para este proyecto");
             return;
@@ -311,20 +272,15 @@ public class ProyectosCardController {
             fila[2] = s.getNombreEstado() != null ? s.getNombreEstado() : "Sin estado";
             fila[3] = s.getFechaInicio() != null ? s.getFechaInicio().toString() : "";
             fila[4] = s.getFechaFin() != null ? s.getFechaFin().toString() : "";
-            
+
             modeloSprints.addRow(fila);
            
         }
         view.getTablaSprints().clearSelection();
     sprintSeleccionadoId = -1;
     }
-    
-    /**
-     * Obtiene el ID del proyecto actualmente seleccionado
-     * @return ID del proyecto o -1 si no hay selección
-     */
+
     public int getProyectoSeleccionadoId() {
         return proyectoSeleccionadoId;
     }
 }
-

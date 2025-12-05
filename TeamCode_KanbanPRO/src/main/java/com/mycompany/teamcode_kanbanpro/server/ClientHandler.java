@@ -29,17 +29,12 @@ import java.net.Socket;
 import java.util.Map;
 
 /**
- * Manejador de conexiones de clientes
- * 
- * Procesa todas las solicitudes entrantes y las delega
- * al handler correspondiente según la acción solicitada.
- * 
- * @author Emanuel / TeamCode
+ * @author Emanuel
  */
 public class ClientHandler implements Runnable {
-    
+
     private Socket socket;
-    
+
     // DAOs
     private final UserDAO userDAO;
     private final RoleDAO roleDAO;
@@ -57,10 +52,10 @@ public class ClientHandler implements Runnable {
     private final ColumnServerHandler columnHandler;
     private final TaskServerHandler taskHandler;
     //private final GroupServerHandler groupHandler;
-    
+
     public ClientHandler(Socket socket) {
         this.socket = socket;
-        
+
         // Inicializar DAOs
         this.userDAO = new UserDAO();
         this.roleDAO = new RoleDAO();
@@ -83,33 +78,32 @@ public class ClientHandler implements Runnable {
     public void run() {
         String clientAddress = socket.getInetAddress().getHostAddress();
         System.out.println("[Server] Cliente conectado: " + clientAddress);
-        
-        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-             ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
+
+        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream()); ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream())) {
 
             Object obj;
-            
+
             // Bucle para procesar múltiples requests del mismo cliente
             while ((obj = in.readObject()) != null) {
                 if (!(obj instanceof Request)) {
                     System.err.println("[Server] Objeto recibido no es un Request");
                     continue;
                 }
-                
+
                 Request req = (Request) obj;
                 System.out.println("[Server] Request recibido: " + req.getAction());
-                
+
                 // Procesar y obtener respuesta
                 Response resp = handleRequest(req);
-                
+
                 // Enviar respuesta al cliente
                 out.writeObject(resp);
                 out.flush();
-                
-                System.out.println("[Server] Response enviado: " + 
-                                 (resp.isSuccess() ? "SUCCESS" : "ERROR"));
+
+                System.out.println("[Server] Response enviado: "
+                        + (resp.isSuccess() ? "SUCCESS" : "ERROR"));
             }
-            
+
         } catch (EOFException eof) {
             System.out.println("[Server] Cliente desconectado: " + clientAddress);
         } catch (Exception e) {
@@ -125,71 +119,68 @@ public class ClientHandler implements Runnable {
             }
         }
     }
-    
-    /**
-     * Procesa una solicitud y la delega al handler correspondiente
-     */
+
+    //Procesa una solicitud y la delega al handler correspondiente
     private Response handleRequest(Request req) {
         String action = req.getAction();
-        
+
         if (action == null || action.isEmpty()) {
             return new Response(false, "Acción no especificada");
         }
-        
+
         try {
             switch (action.toLowerCase()) {
-                
-                // ==================== AUTENTICACIÓN ====================
+
+                // AUTENTICACIÓN
                 case "login":
                     return handleLogin(req);
-                    
+
                 case "register":
                     return userHandler.handleRegister(req);
-                
-                // ==================== ROLES ====================
+
+                // ROLES
                 case "getroles":
                     return roleHandler.handleGetRoles();
                 /*
-                // ==================== GRUPOS ====================
+                // GRUPOS
                 case "getallgroups":
                     return groupHandler.handleGetAllGroups();
                 /*    
                 case "getgroupsbyproject":
                     return groupHandler.handleGetGroupsByProject(
                         (int) req.getPayload().get("projectId"));
-                    */
-                    /*
+                 */
+ /*
                 case "getgroupsbyuser":
                     return groupHandler.handleGetGroupsByUser(
                         (int) req.getPayload().get("userId"));
-                */
-                // ==================== PROYECTOS ====================
-                    
+                 */
+
                 case "getprojectsbyuser":
                     return projectHandler.handleGetProjectsByUser(
-                        (int) req.getPayload().get("userId"));
-                    
+                            (int) req.getPayload().get("userId"));
+
                 case "createproject":
                     return projectHandler.handleCreateProject(req);
-                    
+
                 case "updateproject":
                     return projectHandler.handleUpdateProject(req);
-                    
+
                 case "deleteproject":
                     return projectHandler.handleDeleteProject(
-                        (int) req.getPayload().get("projectId"));
-                
-                // ==================== SPRINTS ====================
+                            (int) req.getPayload().get("projectId"));
+
+                // SPRINTS
                 case "getsprintsbyproject":
                     return sprintHandler.handleGetSprintByProject(
-                        (int) req.getPayload().get("projectId"));
-                    
+                            (int) req.getPayload().get("projectId"));
+
                 case "createsprint":
                     return sprintHandler.handleCreateSprint(req);
-                    
+
                 case "updatesprintstatus":
                     return sprintHandler.handleUpdateSprintStatus(req);
-                    
+
                 case "deletesprint":
                     return sprintHandler.handleDeleteSprint(
                         (int) req.getPayload().get("sprintId"));
@@ -203,19 +194,19 @@ public class ClientHandler implements Runnable {
                     
                 case "createtask":
                     return new Response(false, "Funcionalidad de tareas pendiente de implementar");
-                    
+
                 case "updatetask":
                     return new Response(false, "Funcionalidad de tareas pendiente de implementar");
-                    
+
                 case "movetask":
                     return new Response(false, "Funcionalidad de tareas pendiente de implementar");
-                
-                // ==================== ACCIÓN NO RECONOCIDA ====================
+
+                // ACCIÓN NO RECONOCIDA
                 default:
                     System.err.println("[Server] Acción no soportada: " + action);
                     return new Response(false, "Acción no soportada: " + action);
             }
-            
+
         } catch (ClassCastException e) {
             System.err.println("[Server] Error de tipo de datos en payload: " + e.getMessage());
             return new Response(false, "Datos de entrada inválidos");
@@ -228,10 +219,8 @@ public class ClientHandler implements Runnable {
             return new Response(false, "Error interno del servidor: " + e.getMessage());
         }
     }
-    
-    /**
-     * Maneja el proceso de login
-     */
+
+    //Maneja el proceso de login
     private Response handleLogin(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
@@ -242,13 +231,13 @@ public class ClientHandler implements Runnable {
                 credencial = (String) p.get("usaurio"); // typo original
             }
             String clavePlain = (String) p.get("clave");
-            
+
             System.out.println("[Server] Intento de login: " + credencial);
-            
+
             if (credencial == null || credencial.isEmpty()) {
                 return new Response(false, "El usuario es requerido");
             }
-            
+
             if (clavePlain == null || clavePlain.isEmpty()) {
                 return new Response(false, "La contraseña es requerida");
             }
@@ -269,15 +258,15 @@ public class ClientHandler implements Runnable {
 
             // Verificar contraseña
             boolean passwordOk = BCryptUtil.checkPwd(clavePlain, user.getPassword());
-            
+
             if (!passwordOk) {
                 System.out.println("[Server] Contraseña incorrecta para: " + credencial);
                 return new Response(false, "Usuario o contraseña incorrectos");
             }
-            
+
             // Login exitoso - preparar respuesta segura (sin password)
             System.out.println("[Server] Login exitoso: " + user.getNombre());
-            
+
             User safeUser = new User();
             safeUser.setIdUsuario(user.getIdUsuario());
             safeUser.setIdRol(user.getIdRol());
@@ -285,17 +274,17 @@ public class ClientHandler implements Runnable {
             safeUser.setNombre(user.getNombre());
             safeUser.setEmail(user.getEmail());
             safeUser.setActivo(user.isActivo());
-            
+
             // Obtener nombre del rol
             Role rol = roleDAO.getRoleById(user.getIdRol());
             if (rol != null) {
                 safeUser.setRolNombre(rol.getNombre());
             }
-            
+
             Response r = new Response(true, "Login exitoso. Bienvenido, " + user.getNombre());
             r.setData(safeUser);
             return r;
-            
+
         } catch (Exception ex) {
             ex.printStackTrace();
             return new Response(false, "Error interno del servidor: " + ex.getMessage());
