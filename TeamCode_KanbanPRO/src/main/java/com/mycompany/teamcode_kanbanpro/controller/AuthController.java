@@ -4,12 +4,11 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.model.User;
-
+import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JOptionPane;
 import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
-import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,23 +27,13 @@ public class AuthController {
     public AuthController(){
         this.loginView = new LoginScreen();
         this.registerView = new RegisterUserView();
-        setIconoVentana();
+        loginView.setIconImage(ImageLoader.loadImage());
         loginView.setVisible(true);
         this.host = "localhost";
         this.port = 3001;
         initialize();
     }
-    
-    private void setIconoVentana() {
-        // icono de la ventana
-        java.net.URL imgURL = getClass().getResource("/com/mycompany/teamcode_kanbanpro/images/KanbanPro.png");
-        if (imgURL != null) {
-            ImageIcon icono = new ImageIcon(imgURL);
-            loginView.setIconImage(icono.getImage());
-        } else {
-            System.err.println("No se pudo cargar el ícono de la aplicación.");
-        }
-    }
+
 
     private void initialize() {
         this.loginView.loginButton.addActionListener(e -> {authenticateUser();});

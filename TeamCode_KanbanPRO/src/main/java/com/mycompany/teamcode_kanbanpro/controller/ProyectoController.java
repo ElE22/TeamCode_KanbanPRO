@@ -8,6 +8,7 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.model.Group;
+import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 import com.mycompany.teamcode_kanbanpro.view.CrearProyectoView;
 
 import javax.swing.*;
@@ -29,7 +30,7 @@ public class ProyectoController {
         this.view = view;
         this.connector = connector;
         this.onProyectoCreado = onProyectoCreado;
-
+        
         // Configurar la ventana
         configurarVentana();
 
@@ -37,20 +38,11 @@ public class ProyectoController {
         // cargarGruposDisponibles();
         // Adjuntar listeners
         attachListeners();
+        this.view.setIconImage(ImageLoader.loadImage());
     }
 
     private void configurarVentana() {
-        try {
-            java.net.URL imgURL = getClass().getResource(
-                    "/com/mycompany/teamcode_kanbanpro/images/KanbanPro.png");
-            if (imgURL != null) {
-                ImageIcon icono = new ImageIcon(imgURL);
-                view.setIconImage(icono.getImage());
-            }
-        } catch (Exception e) {
-            System.err.println("No se pudo cargar el ícono: " + e.getMessage());
-        }
-
+       
         // Cerrar con ESC
         view.getRootPane().registerKeyboardAction(
                 e -> view.dispose(),

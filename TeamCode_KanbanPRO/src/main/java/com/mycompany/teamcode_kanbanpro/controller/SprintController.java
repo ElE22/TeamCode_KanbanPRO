@@ -8,6 +8,7 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.view.CrearSprintView;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
+import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 
 import javax.swing.JOptionPane;
 import javax.swing.ImageIcon;
@@ -38,20 +39,10 @@ public class SprintController {
         configurarVentana();
 
         attachListeners();
+        this.view.setIconImage(ImageLoader.loadImage());
     }
 
     private void configurarVentana() {
-        // Establecer ícono de la ventana
-        try {
-            java.net.URL imgURL = getClass().getResource(
-                    "/com/mycompany/teamcode_kanbanpro/images/KanbanPro.png");
-            if (imgURL != null) {
-                ImageIcon icono = new ImageIcon(imgURL);
-                view.setIconImage(icono.getImage());
-            }
-        } catch (Exception e) {
-            System.err.println("No se pudo cargar el ícono: " + e.getMessage());
-        }
 
         // Hacer la ventana modal (bloquea la ventana padre)
         view.setModalExclusionType(java.awt.Dialog.ModalExclusionType.APPLICATION_EXCLUDE);

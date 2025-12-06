@@ -50,7 +50,7 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     private void createTopPanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         
-        // Panel superior con título y botón
+        // Panel superior con titulo y botón
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(Color.WHITE);
         topPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
@@ -80,55 +80,6 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
         setContentPane(mainPanel);
     }
 
-
-//    private void createKanbanBoard() {
-//        JPanel boardPanel = (JPanel) ((JPanel) getContentPane()).getComponent(1);
-//        
-//        // Crear columnas con colores pasteles
-//        backlogColumn = new KanbanColumnPanel("Backlog", new Color(255, 214, 230), this);
-//        inProgressColumn = new KanbanColumnPanel("In Progress", new Color(200, 230, 201), this);
-//        reviewColumn = new KanbanColumnPanel("Review", new Color(187, 222, 251), this);
-//        doneColumn = new KanbanColumnPanel("Done", new Color(225, 190, 231), this);
-//
-//        // Agregar tareas de ejemplo
-//        addExampleTasks();
-//
-//        // Agregar columnas al tablero
-//        boardPanel.add(backlogColumn);
-//        boardPanel.add(inProgressColumn);
-//        boardPanel.add(reviewColumn);
-//        boardPanel.add(doneColumn);
-//    }
-//
-//    private void addExampleTasks() {
-//        backlogColumn.addTask(new KanbanTaskPanel(
-//            "Implementar Login", 
-//            "ALTA", 
-//            "Backend, Frontend", 
-//            "Sistema de autenticación de usuarios con JWT",
-//            this
-//        ));
-//        
-//        backlogColumn.addTask(new KanbanTaskPanel(
-//            "Diseño de la Pizarra", 
-//            "MEDIA", 
-//            "Frontend, Diseño", 
-//            "Crear mockups y prototipos de la interfaz Kanban",
-//            this
-//        ));
-//        
-//        inProgressColumn.addTask(new KanbanTaskPanel(
-//            "Revisar Diagrama E-R", 
-//            "BAJA", 
-//            "Backend, Logística", 
-//            "Validar relaciones y normalización de base de datos",
-//            this
-//        ));
-//    }
- 
-
-    // Callback para el botón de crear tarea
-    
    public void addColumns(KanbanColumnPanel columnPanel) {
        this.boardPanel.add(columnPanel);
        // Registrar en el map 
@@ -138,29 +89,26 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
         boardPanel.setLayout(new GridLayout(1, columns, 10, 10));
     }
 
-    // Método para notificar cuando se mueve una tarea
-    public void onTaskMoved(String taskTitle, String newColumnName) {
-        System.out.println("NOTIFICACION: la tarea '" + taskTitle + "' se movio a: " + newColumnName);
-        // Aquí se conectará con el controller
-    }
+   
 
-    // --- Métodos para Drag & Drop ---
     
     public Image getComponentDragImage(JComponent component) {
-    Dimension size = component.getSize();
-    if (size.width <= 0 || size.height <= 0) {
-        size = component.getPreferredSize();
+
+        component.revalidate();
+        component.doLayout();
+        component.validate();
+
+        Dimension size = component.getPreferredSize();
+
+        BufferedImage image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB_PRE);
+
+        Graphics2D g2d = image.createGraphics();
+        g2d.setComposite(AlphaComposite.SrcOver.derive(0.7f));
+        component.setSize(size);
+        component.paint(g2d);
+        g2d.dispose();
+        return image;
     }
-    
-    BufferedImage image = new BufferedImage(
-        size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-    
-    Graphics2D g2d = image.createGraphics();
-    g2d.setComposite(AlphaComposite.SrcOver.derive(0.7f)); 
-    component.paint(g2d);
-    g2d.dispose();
-    return image;
-}
 
     @Override
     public void dragGestureRecognized(DragGestureEvent dge) {
@@ -174,14 +122,20 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
             taskPanel = (KanbanTaskPanel) SwingUtilities.getAncestorOfClass(KanbanTaskPanel.class, component);
         }
         
-        if (taskPanel == null) return;
+        if (taskPanel == null){ return;}
         
-        // Obtener el transferable usando el método público del TaskTransferHandler
-        Transferable transferable = ((TaskTransferHandler) taskPanel.getTransferHandler()).createTransferable(taskPanel);
         
-        if (transferable == null) return;
+        Transferable t = ((TaskTransferHandler) taskPanel.getTransferHandler()).createTransferable(taskPanel);
+        
+        if (t == null) return;
         
         Image dragImage = getComponentDragImage(taskPanel);
+        try {
+    Image img = getComponentDragImage(taskPanel);
+    if (img instanceof BufferedImage) {
+        javax.imageio.ImageIO.write((BufferedImage) img, "png", new java.io.File("debug_drag.png"));
+    }
+} catch (Exception e) { e.printStackTrace(); }
         Point dragOffset = dge.getDragOrigin();
         
         try {
@@ -189,7 +143,7 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
                 Cursor.getDefaultCursor(),
                 dragImage,
                 dragOffset,
-                transferable,
+                t,
                 this
             );
         } catch (Exception ex) {

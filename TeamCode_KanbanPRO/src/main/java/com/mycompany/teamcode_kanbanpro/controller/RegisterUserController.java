@@ -9,6 +9,7 @@ import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
 import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.client.Request; 
 import com.mycompany.teamcode_kanbanpro.client.Response;
+import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -54,7 +55,8 @@ public class RegisterUserController {
         
         //cargar roles
         loadRolesFromServer();
-        setIconoVentana();
+        
+        this.view.setIconImage(ImageLoader.loadImage());
         this.view.setVisible(true);
 
         // Eventos
@@ -67,17 +69,6 @@ public class RegisterUserController {
         });
 
         view.getBtnRegister().setEnabled(false);
-    }
-    
-    private void setIconoVentana() {
-        // icono de la ventana
-        java.net.URL imgURL = getClass().getResource("/com/mycompany/teamcode_kanbanpro/images/KanbanPro.png");
-        if (imgURL != null) {
-            ImageIcon icono = new ImageIcon(imgURL);
-            view.setIconImage(icono.getImage());
-        } else {
-            System.err.println("No se pudo cargar el ícono de la aplicación.");
-        }
     }
 
     //cargar roles

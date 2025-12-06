@@ -45,7 +45,11 @@ public class KanbanColumnPanel extends JPanel {
         
         add(titleLabel);
         add(Box.createRigidArea(new Dimension(0, 8)));
+        setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
+        setBackground(new Color(250, 250, 250));
+        setTransferHandler(new ColumnTransferHandler(this, parentView));
         add(Box.createVerticalGlue()); // Espacio flexible al final
+        
     }
 
     private void setupTransferHandler() {

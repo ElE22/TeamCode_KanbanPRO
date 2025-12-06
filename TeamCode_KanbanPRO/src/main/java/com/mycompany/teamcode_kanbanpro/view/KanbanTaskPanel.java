@@ -40,7 +40,6 @@ public class KanbanTaskPanel extends JPanel {
         
         setBackground(new Color(248, 249, 250));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        setOpaque(true);
     }
 
     private void createTaskComponents() {

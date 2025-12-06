@@ -5,6 +5,7 @@ import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.model.Task; 
 import com.mycompany.teamcode_kanbanpro.model.Column; 
+import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 import com.mycompany.teamcode_kanbanpro.view.KanbanBoardView;
 import com.mycompany.teamcode_kanbanpro.view.KanbanTaskPanel;
 import com.mycompany.teamcode_kanbanpro.view.KanbanColumnPanel;
@@ -37,6 +38,7 @@ public class KanbanBoardController {
         // El controller inicia el proceso de carga
         loadKanbanBoard();
         attachListeners();
+        this.view.setIconImage(ImageLoader.loadImage());
         
         this.view.setVisible(true);
     }
@@ -137,10 +139,6 @@ public class KanbanBoardController {
             JOptionPane.showMessageDialog(view, "Error de conexión al cargar las tareas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
-    // =================================================================
-    // MÉTODOS PARA MANEJAR EVENTOS (RESPUESTA a la interacción)
-    // =================================================================
 
     /**
      * Método que maneja la lógica de negocio cuando una tarea ha sido movida.
@@ -152,7 +150,6 @@ public class KanbanBoardController {
         System.out.println("Tarea '" + task.getTitulo() + "' movida a la columna '" + newColumn.getNombre() + "'. ID Columna: " + newColumn.getIdColumna());
         
         try {
-            // 1. Preparar la Solicitud de Actualización
             Request req = new Request();
             req.setAction("updateTaskStatus");
             Map<String, Object> payload = new HashMap<>();
@@ -160,12 +157,12 @@ public class KanbanBoardController {
             payload.put("idColumna", newColumn.getIdColumna()); // Usamos el ID de la columna
             req.setPayload(payload);
             
-            // 2. Enviar y Recibir Respuesta
+            
             Response resp = connector.sendRequest(req);
             
             if (!resp.isSuccess()) {
                 JOptionPane.showMessageDialog(view, "Error al actualizar estado en el servidor: " + resp.getMessage(), "Error de Sincronización", JOptionPane.ERROR_MESSAGE);
-                // NOTA: Idealmente, aquí se revierte el movimiento visual si la actualización falla.
+                // NOTA: Idealmente, aqui se revierte el movimiento visual si la actualización falla.
             }
             
         } catch (Exception e) {

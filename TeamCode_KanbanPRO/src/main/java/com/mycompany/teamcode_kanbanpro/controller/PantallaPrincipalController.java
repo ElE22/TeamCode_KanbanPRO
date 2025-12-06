@@ -1,6 +1,7 @@
 package com.mycompany.teamcode_kanbanpro.controller;
 
 import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
+import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
 import java.awt.event.ActionEvent;
@@ -24,19 +25,8 @@ public class PantallaPrincipalController {
         this.connector = connector;
         putNameUserBar();
         attachListeners();
-        setIconoVentana();
+        view.setIconImage(ImageLoader.loadImage());
         view.setVisible(true);
-    }
-
-    private void setIconoVentana() {
-        // icono de la ventana
-        java.net.URL imgURL = getClass().getResource("/com/mycompany/teamcode_kanbanpro/images/KanbanPro.png");
-        if (imgURL != null) {
-            ImageIcon icono = new ImageIcon(imgURL);
-            view.setIconImage(icono.getImage());
-        } else {
-            System.err.println("No se pudo cargar el ícono de la aplicación.");
-        }
     }
 
     private void putNameUserBar() {
