@@ -5,8 +5,6 @@ import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
 import java.awt.event.ActionEvent;
-
-import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 /**
@@ -17,12 +15,14 @@ public class PantallaPrincipalController {
 
     private PantallaPrincipal view;
     private ClientConnector connector;
+    private PermissionManager permission;
 
     private ProyectosCardController proyectosController = null;
 
     public PantallaPrincipalController(ClientConnector connector) {
         this.view = new PantallaPrincipal();
         this.connector = connector;
+        this.permission = new PermissionManager(this.connector.getUserRole());
         putNameUserBar();
         attachListeners();
         view.setIconImage(ImageLoader.loadImage());
@@ -43,7 +43,7 @@ public class PantallaPrincipalController {
 
         view.getBtnInicio().addActionListener(e -> view.mostrarPanel("Dashboard"));
 
-        view.getBtnKanbanBoard().addActionListener(e -> view.mostrarPanel("Kanban Board"));
+        
 
         view.getBtnProyectos().addActionListener(this::handleProyectosClick);
 
@@ -54,7 +54,7 @@ public class PantallaPrincipalController {
         if (proyectosController == null) {
             ProyectosView proyectosView = view.getPanelProyectos();
 
-            proyectosController = new ProyectosCardController(proyectosView, this.connector);
+            proyectosController = new ProyectosCardController(proyectosView, this.connector, permission);
         } else {
             proyectosController.cargarProyectosIniciales();
         }

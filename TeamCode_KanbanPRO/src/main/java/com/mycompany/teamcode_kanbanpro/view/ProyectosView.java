@@ -21,6 +21,8 @@ public class ProyectosView extends JPanel {
     private JButton btnCrearSprint;
     private JTable tablaProyectos;
     private JTable tablaSprints;
+    private JPanel panelProyectos;
+    private JPanel panelSprints;
 
     // Modelos de las tablas (para mejor control)
     private DefaultTableModel modeloProyectos;
@@ -48,7 +50,7 @@ public class ProyectosView extends JPanel {
         splitPane.setBackground(Color.WHITE);
 
         //PANEL IZQUIERDO: PROYECTOS
-        JPanel panelProyectos = new JPanel(new BorderLayout(8, 8));
+        panelProyectos = new JPanel(new BorderLayout(8, 8));
         panelProyectos.setBackground(Color.WHITE);
         panelProyectos.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(new Color(200, 200, 200), 1, true),
@@ -87,7 +89,7 @@ public class ProyectosView extends JPanel {
         JScrollPane scrollProyectos = new JScrollPane(tablaProyectos);
         panelProyectos.add(scrollProyectos, BorderLayout.CENTER);
 
-        // Botón Crear Proyecto
+        // Boton Crear Proyecto
         btnCrearProyecto = new JButton("Crear Proyecto");
         btnCrearProyecto.setBackground(new Color(25, 118, 210));
         btnCrearProyecto.setForeground(Color.WHITE);
@@ -98,7 +100,7 @@ public class ProyectosView extends JPanel {
         panelProyectos.add(btnCrearProyecto, BorderLayout.SOUTH);
 
         //PANEL DERECHO: SPRINTS
-        JPanel panelSprints = new JPanel(new BorderLayout(8, 8));
+        panelSprints = new JPanel(new BorderLayout(8, 8));
         panelSprints.setBackground(Color.WHITE);
         panelSprints.setBorder(BorderFactory.createTitledBorder(
                 new LineBorder(new Color(200, 200, 200), 1, true),
@@ -134,15 +136,15 @@ public class ProyectosView extends JPanel {
         panelSprints.add(scrollSprints, BorderLayout.CENTER);
 
         // Panel inferior con instrucción y botón
-        JPanel panelInferiorSprints = new JPanel(new BorderLayout(5, 5));
-        panelInferiorSprints.setBackground(Color.WHITE);
+        // JPanel panelInferiorSprints = new JPanel(new BorderLayout(5, 5));
+        // panelInferiorSprints.setBackground(Color.WHITE);
 
-        JLabel lblInstruccion = new JLabel("Seleccione un proyecto para ver sus sprints", SwingConstants.CENTER);
-        lblInstruccion.setFont(new Font("Segoe UI", Font.ITALIC, 11));
-        lblInstruccion.setForeground(Color.GRAY);
-        panelInferiorSprints.add(lblInstruccion, BorderLayout.NORTH);
+        // JLabel lblInstruccion = new JLabel("Seleccione un proyecto para ver sus sprints", SwingConstants.CENTER);
+        // lblInstruccion.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        // lblInstruccion.setForeground(Color.GRAY);
+        // panelInferiorSprints.add(lblInstruccion, BorderLayout.NORTH);
 
-        // Botón Crear Sprint
+        // Boton Crear Sprint
         btnCrearSprint = new JButton("Crear Sprint");
         btnCrearSprint.setBackground(new Color(76, 175, 80)); // Verde para diferenciar
         btnCrearSprint.setForeground(Color.WHITE);
@@ -150,14 +152,21 @@ public class ProyectosView extends JPanel {
         btnCrearSprint.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnCrearSprint.setBorder(new LineBorder(Color.WHITE, 2, true));
         btnCrearSprint.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        panelInferiorSprints.add(btnCrearSprint, BorderLayout.SOUTH);
+        panelSprints.add(btnCrearSprint, BorderLayout.SOUTH);
 
-        panelSprints.add(panelInferiorSprints, BorderLayout.SOUTH);
 
         //Agregar paneles al SplitPane
         splitPane.setLeftComponent(panelProyectos);
         splitPane.setRightComponent(panelSprints);
         add(splitPane, BorderLayout.CENTER);
+    }
+
+    public JPanel getPanelProyectos() {
+        return panelProyectos;
+    }
+
+    public JPanel getPanelSprints() {
+        return panelSprints;
     }
 
     public JTextField getTxtNombreProyecto() {

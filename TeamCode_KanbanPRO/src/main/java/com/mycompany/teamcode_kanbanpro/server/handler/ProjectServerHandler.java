@@ -21,46 +21,39 @@ import java.util.Map;
 public class ProjectServerHandler {
     
     private final ProjectDAO projectDAO;
-   // private final GroupDAO groupDAO;
+    private  GroupDAO groupDAO;
     private final UserDAO userDAO;
 
     public ProjectServerHandler(ProjectDAO projectDAO, UserDAO userDAO) {
         this.projectDAO = projectDAO;
         this.userDAO = userDAO;
-        //this.groupDAO = new GroupDAO(); // Necesitamos acceso a grupos
     }
-    /*
-    // Constructor alternativo con GroupDAO
+    
     public ProjectServerHandler(ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) {
         this.projectDAO = projectDAO;
         this.userDAO = userDAO;
-        //this.groupDAO = groupDAO;
+        this.groupDAO = groupDAO;
     }
 
-    /**
-     * Obtiene los proyectos a los que tiene acceso un usuario
-     * (a través de sus grupos)
-     */
     
     public Response handleGetProjectsByUser(int userId) {
         try {
             System.out.println("[ProjectHandler] Obteniendo proyectos para usuario ID: " + userId);
             
-            /*
-            // Validar si el usuario está en algún grupo
+            
+            // Validar si el usuario esta en un grupo
             boolean userHasGroups = userDAO.isUserInAnyGroup(userId);
             
             if (!userHasGroups) {
                 System.out.println("[ProjectHandler] Usuario no pertenece a ningún grupo");
-                return new Response(false, 
-                    "El usuario no pertenece a ningún grupo.\n" +
-                    "Contacte al administrador para ser asignado a un grupo.");
+                return new Response(false, """
+                                           El usuario no pertenece a ning\u00fan grupo.
+                                           Contacte al administrador para ser asignado a un grupo.""");
             }
-    */
-            List<Project> projects = projectDAO.selectProjectsByUserId(userId);
+    
+            List<Project> projects = projectDAO.selectProjectsByUserIdWithGroups(userId);
             
-            System.out.println("[ProjectHandler] Proyectos encontrados: " + 
-                             (projects != null ? projects.size() : 0));
+            System.out.println("[ProjectHandler] Proyectos encontrados: " + (projects != null ? projects.size() : 0));
 
             Response r = new Response(true, "Proyectos cargados exitosamente.");
             r.setData(projects);

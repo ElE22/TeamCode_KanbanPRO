@@ -7,7 +7,6 @@ package com.mycompany.teamcode_kanbanpro.view;
 import javax.swing.JFrame;
 import javax.swing.*;
 import java.awt.*;
-import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 /**
  *
@@ -20,7 +19,6 @@ public class PantallaPrincipal extends JFrame {
     JLabel lblUsuario;
     //private SprintsView panelSprint;
     private JButton btnInicio;
-    private JButton btnKanbanBoard;
     private JButton btnProyectos;
     private JButton btnSprints;
     private JButton btnSalir;
@@ -31,10 +29,6 @@ public class PantallaPrincipal extends JFrame {
     
     public JButton getBtnInicio() {
         return btnInicio;
-    }
-
-    public JButton getBtnKanbanBoard() {
-        return btnKanbanBoard;
     }
 
     public JButton getBtnProyectos() {
@@ -102,7 +96,6 @@ public class PantallaPrincipal extends JFrame {
         menuLateral.setBorder(BorderFactory.createEmptyBorder(80, 20, 80, 20));
 
         btnInicio = crearBotonMenu("Inicio");
-        btnKanbanBoard = crearBotonMenu("Kanban Board");
         btnProyectos = crearBotonMenu("Proyectos");
         btnSalir = crearBotonMenu("Cerrar Sesión");
         /*
@@ -112,7 +105,6 @@ public class PantallaPrincipal extends JFrame {
         menuLateral.add(btnSprints);
         */
         menuLateral.add(btnInicio);
-        menuLateral.add(btnKanbanBoard);
         menuLateral.add(btnProyectos);
         //menuLateral.add(btnSprints);
         //menuLateral.add(btnBacklog);
@@ -120,7 +112,7 @@ public class PantallaPrincipal extends JFrame {
         
         add(menuLateral, BorderLayout.WEST);
 
-        // ?panel central dinamico
+        // panel central dinamico
         cardLayout = new CardLayout();
         panelCentral = new JPanel(cardLayout);
 

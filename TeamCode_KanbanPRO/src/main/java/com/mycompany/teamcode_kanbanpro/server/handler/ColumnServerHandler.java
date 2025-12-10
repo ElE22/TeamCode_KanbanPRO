@@ -27,7 +27,6 @@ public class ColumnServerHandler {
             List<Column> columns = columnDAO.getColumnsByProject(sprintId);
             Response r = new Response(true, "Columnas cargadas exitosamente");
             r.setData(columns);
-            System.out.print("Data columnas: "+r.getData());
             return r;
         } catch (Exception ex) {
             ex.printStackTrace();

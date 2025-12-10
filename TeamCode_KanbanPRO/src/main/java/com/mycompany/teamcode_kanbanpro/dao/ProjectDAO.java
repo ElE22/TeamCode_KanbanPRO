@@ -30,7 +30,7 @@ public class ProjectDAO {
     private static final String UPDATE_PROJECT = "UPDATE proyecto SET nombre = ?, descripcion = ? WHERE id_proyecto = ?";
     
     
-    /*
+    
     private static final String SELECT_PROJECTS_AND_GROUPS_BY_USER_ID = 
             "SELECT p.id_proyecto,  p.nombre AS nombre, p.descripcion, p.fecha_creacion, " +
             "u_creator.nombre AS nombre_creador, p.id_usuario_creador, " +
@@ -44,7 +44,7 @@ public class ProjectDAO {
             "WHERE u.id_usuario = ? " +
             "GROUP BY p.id_proyecto, p.nombre, p.descripcion, p.fecha_creacion, u_creator.nombre, p.id_usuario_creador " +
             "ORDER BY p.nombre";
-    */
+    
     // mapea una fila del resultset a un objeto project
     private Project RowToProject(ResultSet rs) throws SQLException {
         Project project = new Project();
@@ -152,9 +152,9 @@ public class ProjectDAO {
         }
         return rowUpdated;
     }
-    /*
+    
     // obtiene todos los proyectos a los que pertenece un usuario (via grupo)
-    public List<Project> selectProjectsByUserId(int userId) {
+    public List<Project> selectProjectsByUserIdWithGroups(int userId) {
         List<Project> projects = new ArrayList<>();
         try (Connection connection = DBUtil.getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(SELECT_PROJECTS_AND_GROUPS_BY_USER_ID)) {
@@ -179,7 +179,6 @@ public class ProjectDAO {
         }
         return projects;
     }
-*/
     // obtiene todos los proyectos creados por el usuario (sin grupos)
 public List<Project> selectProjectsByUserId(int userId) {
     List<Project> projects = new ArrayList<>();

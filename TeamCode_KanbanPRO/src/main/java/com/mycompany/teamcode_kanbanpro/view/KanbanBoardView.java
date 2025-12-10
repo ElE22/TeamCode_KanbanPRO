@@ -121,31 +121,34 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
         } else {
             taskPanel = (KanbanTaskPanel) SwingUtilities.getAncestorOfClass(KanbanTaskPanel.class, component);
         }
-        
-        if (taskPanel == null){ return;}
-        
-        
+
+        if (taskPanel == null) {
+            return;
+        }
+
         Transferable t = ((TaskTransferHandler) taskPanel.getTransferHandler()).createTransferable(taskPanel);
-        
-        if (t == null) return;
-        
+
+        if (t == null)
+            return;
+
         Image dragImage = getComponentDragImage(taskPanel);
         try {
-    Image img = getComponentDragImage(taskPanel);
-    if (img instanceof BufferedImage) {
-        javax.imageio.ImageIO.write((BufferedImage) img, "png", new java.io.File("debug_drag.png"));
-    }
-} catch (Exception e) { e.printStackTrace(); }
+            Image img = getComponentDragImage(taskPanel);
+            if (img instanceof BufferedImage) {
+                javax.imageio.ImageIO.write((BufferedImage) img, "png", new java.io.File("debug_drag.png"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         Point dragOffset = dge.getDragOrigin();
-        
+
         try {
             dge.startDrag(
-                Cursor.getDefaultCursor(),
-                dragImage,
-                dragOffset,
-                t,
-                this
-            );
+                    Cursor.getDefaultCursor(),
+                    dragImage,
+                    dragOffset,
+                    t,
+                    this);
         } catch (Exception ex) {
             System.err.println("Error al iniciar el arrastre: " + ex.getMessage());
         }

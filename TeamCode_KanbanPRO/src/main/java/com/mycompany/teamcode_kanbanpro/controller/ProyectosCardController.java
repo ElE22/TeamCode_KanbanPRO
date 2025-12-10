@@ -7,7 +7,6 @@ import com.mycompany.teamcode_kanbanpro.model.Project;
 import com.mycompany.teamcode_kanbanpro.model.Sprint;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
 import com.mycompany.teamcode_kanbanpro.view.CrearSprintView;
-import com.mycompany.teamcode_kanbanpro.controller.KanbanBoardController;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,14 +27,16 @@ public class ProyectosCardController {
     private ClientConnector connector;
     private DefaultTableModel modeloProyectos;
     private DefaultTableModel modeloSprints;
+    private PermissionManager permission;
 
     // Variable para almacenar el ID del proyecto actualmente seleccionado
     private int proyectoSeleccionadoId = -1;
     private int sprintSeleccionadoId = -1;
 
-    public ProyectosCardController(ProyectosView view, ClientConnector connector) {
+    public ProyectosCardController(ProyectosView view, ClientConnector connector, PermissionManager permission) {
         this.view = view;
         this.connector = connector;
+        this.permission = permission;
         initialize();
         cargarProyectosIniciales();
     }
@@ -46,9 +47,7 @@ public class ProyectosCardController {
         modeloProyectos = view.getModeloProyectos();
         modeloSprints = view.getModeloSprints();
 
-        view.getBtnCrearProyecto().addActionListener(e -> crearNuevoProyecto());
-
-        view.getBtnCrearSprint().addActionListener(e -> mostrarFormularioCrearSprint());
+        configurarPermisos();
 
         view.getTablaProyectos().addMouseListener(new MouseAdapter() {
             @Override
@@ -95,8 +94,29 @@ public class ProyectosCardController {
     });
     }
 
+
+    private void configurarPermisos() {
+        if (permission.isScrumOrProduct()) {
+            view.getBtnCrearProyecto().addActionListener(e -> crearNuevoProyecto());
+            view.getBtnCrearSprint().addActionListener(e -> mostrarFormularioCrearSprint());
+        } else {
+            view.getPanelProyectos().remove(view.getBtnCrearProyecto());
+            view.getPanelSprints().remove(view.getBtnCrearSprint());
+        }
+        
+        
+        view.getPanelProyectos().revalidate();
+        view.getPanelProyectos().repaint();
+        view.getPanelSprints().revalidate();
+        view.getPanelSprints().repaint();
+
+    }
+
     //Muestra el formulario para crear un nuevo sprint
     private void mostrarFormularioCrearSprint() {
+
+       
+
         //Verificar que hay un proyecto seleccionado
         int filaSeleccionada = view.getTablaProyectos().getSelectedRow();
 
@@ -168,14 +188,6 @@ public class ProyectosCardController {
     //Muestra el formulario para crear un nuevo proyecto
     private void crearNuevoProyecto() {
 
-        String userRole = connector.getUserRole();
-        if (userRole == null || !userRole.equalsIgnoreCase("Scrum Master")) {
-            JOptionPane.showMessageDialog(view,
-                    "Solo los usuarios con rol de Scrum Master pueden crear proyectos.",
-                    "Permiso denegado",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
 
         // Crear la vista del formulario
         com.mycompany.teamcode_kanbanpro.view.CrearProyectoView formulario
