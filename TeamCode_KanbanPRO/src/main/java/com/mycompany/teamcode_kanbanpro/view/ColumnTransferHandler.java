@@ -6,6 +6,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
+import java.lang.reflect.Method;
+
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 
@@ -96,7 +98,18 @@ class ColumnTransferHandler extends TransferHandler {
 
         // Notificar al view sobre el movimiento
         if (parentView != null) {
-           parentView.getController().handleTaskMoved(taskData, newColumnData);
+            Object controller = parentView.getController();
+            if (controller != null) {
+                try {
+                    // Try to invoke handleTaskMoved(Task, Column) if the controller defines it.
+                    Method m = controller.getClass().getMethod("handleTaskMoved", Task.class, Column.class);
+                    m.invoke(controller, taskData, newColumnData);
+                } catch (NoSuchMethodException e) {
+                    // Controller doesn't define handleTaskMoved(Task, Column); ignore.
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         return true;

@@ -28,6 +28,8 @@ public class ProyectosCardController {
     private DefaultTableModel modeloProyectos;
     private DefaultTableModel modeloSprints;
     private PermissionManager permission;
+    private KanbanBoardController kanbanControllerAbierto = null;
+
 
     // Variable para almacenar el ID del proyecto actualmente seleccionado
     private int proyectoSeleccionadoId = -1;
@@ -61,37 +63,53 @@ public class ProyectosCardController {
 
                     // Cargar los sprints de ese proyecto
                     cargarSprintsParaProyecto(proyectoSeleccionadoId);
-
-                    System.out.println("Proyecto seleccionado ID: " + proyectoSeleccionadoId);
                 }
             }
         });
         view.getTablaSprints().addMouseListener(new MouseAdapter() {
-        @Override
-        public void mouseClicked(MouseEvent e) {
-            JTable tabla = (JTable) e.getSource();
-            int filaSeleccionada = tabla.getSelectedRow();
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JTable tabla = (JTable) e.getSource();
+                int filaSeleccionada = tabla.getSelectedRow();
 
-            if (filaSeleccionada != -1) {
-                // Usar el modeloSprints para obtener el ID
-                sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0); 
-                System.out.println("Sprint seleccionado ID: " + sprintSeleccionadoId);
-                new KanbanBoardController(connector,sprintSeleccionadoId, proyectoSeleccionadoId  );
+                if (filaSeleccionada != -1) {
+
+                    sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0);
+
+                    // Si ya existe un Kanban abierto, los traemos al frente
+                    if (kanbanControllerAbierto != null && kanbanControllerAbierto.isVisible()) {
+                        kanbanControllerAbierto.toFront();
+                        return;
+                    }
+
+                    // Si no existe o fue cerrado, creamos uno nuevo
+                    kanbanControllerAbierto = new KanbanBoardController(
+                            connector,
+                            sprintSeleccionadoId,
+                            proyectoSeleccionadoId);
+
+                    //limpiamos la variable al cerrar la ventana
+                    kanbanControllerAbierto.getView().addWindowListener(new java.awt.event.WindowAdapter() {
+                        @Override
+                        public void windowClosed(java.awt.event.WindowEvent e) {
+                            kanbanControllerAbierto = null; 
+                        }
+                    });
+                }
             }
-        }
-    });
-       view.getTablaSprints().getSelectionModel().addListSelectionListener(e -> {
-        // Asegurarse de que el evento no está siendo ajustado (previene disparos múltiples)
-        if (!e.getValueIsAdjusting()) { 
-            int filaSeleccionada = view.getTablaSprints().getSelectedRow();
-            if (filaSeleccionada != -1) {
-                // Usar modeloSprints y solo actualizar la variable de ID
-                sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0);
-                System.out.println("Sprint seleccionado ID (por teclado/modelo): " + sprintSeleccionadoId);
-                // ELIMINADO: Ya NO se llama a cargarSprintsParaProyecto(proyectoSeleccionadoId);
+        });
+        view.getTablaSprints().getSelectionModel().addListSelectionListener(e -> {
+            // Asegurarse de que el evento no está siendo ajustado (previene disparos
+            // múltiples)
+            if (!e.getValueIsAdjusting()) {
+                int filaSeleccionada = view.getTablaSprints().getSelectedRow();
+                if (filaSeleccionada != -1) {
+                    // Usar modeloSprints y solo actualizar la variable de ID
+                    sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0);
+                    ;
+                }
             }
-        }
-    });
+        });
     }
 
 
@@ -169,7 +187,7 @@ public class ProyectosCardController {
                 List<Sprint> listSprints = (List<Sprint>) resp.getData();
                 actualizarTablaSprints(listSprints);
 
-                System.out.println("Sprints cargados: " + (listSprints != null ? listSprints.size() : 0));
+                //System.out.println("Sprints cargados: " + (listSprints != null ? listSprints.size() : 0));
             } else {
                 JOptionPane.showMessageDialog(view,
                         "Error al cargar sprints: " + resp.getMessage(),

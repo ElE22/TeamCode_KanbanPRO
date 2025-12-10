@@ -106,7 +106,7 @@ public class ClientHandler implements Runnable {
             LOGGER.fine("request recibido: " + req.getAction());
 
             Response resp = handleRequest(req);
-
+            resp.setRequestId(req.getRequestId());
             out.writeObject(resp);
             out.flush();
 
@@ -116,10 +116,15 @@ public class ClientHandler implements Runnable {
 
     public synchronized void sendResponse(Response resp) {
         try {
-            if (out != null) {
+            if (this.out != null) {
+                LOGGER.fine("Desde sendUpdate a " + socket.getInetAddress() + " — resp.isBroadcast="
+                        + resp.isBroadcast()
+                        + " — dataClass=" + (resp.getData() != null ? resp.getData().getClass().getName() : "null"));
                 out.writeObject(resp);
                 out.flush();
                 LOGGER.fine("broadcast enviado a " + socket.getInetAddress());
+            } else {
+                LOGGER.warning("out es null al intentar enviar broadcast a " + socket.getInetAddress());
             }
         } catch (IOException e) {
             LOGGER.log(Level.WARNING, "Error al enviar broadcast a cliente: " + socket.getInetAddress(), e);
@@ -203,10 +208,14 @@ public class ClientHandler implements Runnable {
                 // Si fue exitoso, notifica a todos los clientes (broadcast)
                 if (resp.isSuccess()) {
                     Response notification = new Response(true, "tarea movida por otro usuario");
-                    notification.setAction("TASK_MOVED_NOTIFICATION"); 
+                    notification.setBroadcast(true);
                     notification.setData(req.getPayload()); 
                     
-                    server.broadcastUpdate(notification); // Llama al broadcast del Server
+                    try {
+                        server.broadcastUpdate(notification, this); // Excluye este cliente del broadcast
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "error al hacer broadcast de movimiento de tarea", e);
+                    }
                 }
                 return resp;
 
@@ -316,4 +325,9 @@ public class ClientHandler implements Runnable {
             LOGGER.log(Level.WARNING, "error al cerrar socket", e);
         }
     }
+
+    public Socket getSocket() {
+        return socket;
+    }
+
 }

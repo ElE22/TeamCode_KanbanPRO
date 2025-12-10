@@ -10,8 +10,11 @@ import java.util.Map;
 public class Request implements Serializable {
     private String action;
     private Map<String, Object> parameters;
-
-     public String getAction() { return action; }
+    private String requestId; 
+    
+    public String getRequestId() { return requestId; }
+    public void setRequestId(String requestId) { this.requestId = requestId; }
+    public String getAction() { return action; }
     public void setAction(String action) { this.action = action; }
     public Map<String, Object> getPayload() { return parameters; }
     public void setPayload(Map<String, Object> payload) { this.parameters = payload; }

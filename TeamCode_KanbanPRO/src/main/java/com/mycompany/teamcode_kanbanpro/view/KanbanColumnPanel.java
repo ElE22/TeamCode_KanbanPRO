@@ -115,4 +115,59 @@ public class KanbanColumnPanel extends JPanel {
     public boolean containsTask(KanbanTaskPanel taskPanel) {
         return taskPanel.getParent() == this;
     }
+
+    
+    /**
+     * Remueve todas las tareas visuales de esta columna y reconstruye el header.
+     * Útil al recargar el tablero desde el modelo.
+     */
+    public void clearTasks() {
+        // eliminar todos los componentes y volver a crear el header
+        removeAll();
+        createHeader();
+        revalidate();
+        repaint();
+    }
+    /**
+     * Busca y devuelve el KanbanTaskPanel con el id de tarea dado dentro de esta columna.
+     * Realiza una búsqueda recursiva por si existen contenedores intermedios o fillers.
+     *
+     * @param taskId id de la tarea a buscar
+     * @return KanbanTaskPanel si se encuentra, o null si no existe
+     */
+    public KanbanTaskPanel getTaskPanel(int taskId) {
+        Component[] components = getComponents();
+        for (Component comp : components) {
+            KanbanTaskPanel found = findTaskPanelRecursive(comp, taskId);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
+    }
+
+    // Helper recursivo para buscar KanbanTaskPanel dentro de un componente
+    private KanbanTaskPanel findTaskPanelRecursive(Component comp, int taskId) {
+        if (comp instanceof KanbanTaskPanel) {
+            KanbanTaskPanel taskPanel = (KanbanTaskPanel) comp;
+            try {
+                if (taskPanel.getTaskData() != null && taskPanel.getTaskData().getIdTarea() == taskId) {
+                    return taskPanel;
+                }
+            } catch (Exception ignored) {
+                // En caso de que getTaskData lance excepción o no exista, continuar
+            }
+            return null;
+        }
+
+        if (comp instanceof Container) {
+            Component[] children = ((Container) comp).getComponents();
+            for (Component child : children) {
+                KanbanTaskPanel found = findTaskPanelRecursive(child, taskId);
+                if (found != null) return found;
+            }
+        }
+
+        return null;
+    }
 }

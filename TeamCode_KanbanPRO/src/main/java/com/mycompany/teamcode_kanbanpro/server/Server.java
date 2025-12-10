@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.mycompany.teamcode_kanbanpro.client.Response;
 
 public class Server implements AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
@@ -55,7 +56,7 @@ public class Server implements AutoCloseable {
                 LOGGER.info("nuevo cliente conectado: " + clientSocket.getInetAddress());
                 ClientHandler handler = new ClientHandler(clientSocket, this); // ¡Necesitamos pasar la referencia del Server!
                 
-                // 2. Registrar el handler
+                // Registrar el handler
                 connectedHandlers.add(handler);
                 threadPool.submit(handler);
                 
@@ -66,6 +67,32 @@ public class Server implements AutoCloseable {
             }
         }
     }
+
+    public void broadcastUpdate(Response updateResponse, ClientHandler excludeHandler) throws IOException {
+        LOGGER.info("Iniciando broadcast (isBroadcast=" + updateResponse.isBroadcast() + ")");
+        int count = 0;
+
+        for (ClientHandler handler : connectedHandlers) {
+            if (handler != excludeHandler) {
+                LOGGER.fine("Enviando a handler: " + handler.getSocket().getInetAddress());
+                updateResponse.setBroadcast(running);
+                handler.sendResponse(updateResponse);
+                count++;
+            } else {
+                LOGGER.fine("Excluyendo al originador: " +  handler.getSocket().getInetAddress());;
+            }
+        }
+
+        LOGGER.info("Broadcast finalizado. " + count + " clientes notificados.");
+    }
+
+
+    public void deregisterHandler(ClientHandler clientHandler) {
+        connectedHandlers.remove(clientHandler);
+        return;
+    }
+
+
 
     @Override
     public void close() throws Exception {
@@ -103,10 +130,5 @@ public class Server implements AutoCloseable {
             LOGGER.log(Level.SEVERE, "error fatal al iniciar servidor", e);
             System.exit(1);
         }
-    }
-
-    public void deregisterHandler(ClientHandler clientHandler) {
-        connectedHandlers.remove(clientHandler);
-        return;
     }
 }

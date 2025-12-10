@@ -88,9 +88,25 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     public void setLayoutBoard(int columns){
         boardPanel.setLayout(new GridLayout(1, columns, 10, 10));
     }
-
-   
-
+    
+    public KanbanColumnPanel findColumnById(int columnId) {
+        for (KanbanColumnPanel columnPanel : columnsMap.values()) {
+            if (columnPanel.getColumnData().getIdColumna() == columnId) { // Asume que columnData es el objeto Column
+                return columnPanel;
+            }
+        }
+        return null;
+    }
+    
+    public KanbanTaskPanel findTaskPanelById(int taskId) {
+        // Buscar tarea en todas las columnas
+        for (KanbanColumnPanel columnPanel : columnsMap.values()) {
+            // Usar el nuevo método de la columna para buscar la tarea por id
+            KanbanTaskPanel taskPanel = columnPanel.getTaskPanel(taskId);
+            if (taskPanel != null) return taskPanel;
+        }
+        return null;
+    }
     
     public Image getComponentDragImage(JComponent component) {
 
