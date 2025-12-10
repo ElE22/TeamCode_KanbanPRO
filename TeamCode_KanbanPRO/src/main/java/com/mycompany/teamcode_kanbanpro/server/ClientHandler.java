@@ -185,8 +185,8 @@ public class ClientHandler implements Runnable {
                 return new Response(false, "funcionalidad pendiente de implementar");
             case "updatetask":
                 return new Response(false, "funcionalidad pendiente de implementar");
-            case "movetask":
-                return new Response(false, "funcionalidad pendiente de implementar");
+            case "movetask": 
+             return taskHandler.handleMoveTask(req);
 
             default:
                 LOGGER.warning("accion no soportada: " + action);

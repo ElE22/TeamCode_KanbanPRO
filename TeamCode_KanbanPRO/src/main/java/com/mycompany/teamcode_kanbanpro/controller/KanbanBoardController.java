@@ -140,18 +140,13 @@ public class KanbanBoardController {
         }
     }
 
-    /**
-     * Método que maneja la lógica de negocio cuando una tarea ha sido movida.
-     * Es llamado por el ColumnTransferHandler.
-     * @param task El objeto Task completo que fue movido.
-     * @param newColumn El objeto Column completo de la columna de destino.
-     */
     public void handleTaskMoved(Task task, Column newColumn) {
         System.out.println("Tarea '" + task.getTitulo() + "' movida a la columna '" + newColumn.getNombre() + "'. ID Columna: " + newColumn.getIdColumna());
         
         try {
             Request req = new Request();
-            req.setAction("updateTaskStatus");
+            
+            req.setAction("movetask"); 
             Map<String, Object> payload = new HashMap<>();
             payload.put("idTarea", task.getIdTarea());
             payload.put("idColumna", newColumn.getIdColumna()); // Usamos el ID de la columna
@@ -160,9 +155,13 @@ public class KanbanBoardController {
             
             Response resp = connector.sendRequest(req);
             
-            if (!resp.isSuccess()) {
+            if (resp.isSuccess()) {
+                
+                 task.setNombreColumna(newColumn.getNombre());
+                 System.out.println("Sincronización de movimiento de tarea exitosa.");
+            } else {
                 JOptionPane.showMessageDialog(view, "Error al actualizar estado en el servidor: " + resp.getMessage(), "Error de Sincronización", JOptionPane.ERROR_MESSAGE);
-                // NOTA: Idealmente, aqui se revierte el movimiento visual si la actualización falla.
+               
             }
             
         } catch (Exception e) {

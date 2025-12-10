@@ -85,6 +85,7 @@ public class TaskDAO {
     // consultas de asignacion (usuario_tarea)
     private static final String ASSIGN_USER_TO_TASK = "INSERT INTO usuario_tarea (id_usuario, id_tarea) VALUES (?, ?)";
     private static final String REMOVE_USER_FROM_TASK = "DELETE FROM usuario_tarea WHERE id_usuario = ? AND id_tarea = ?";
+    private static final String UPDATE_TASK_COLUMN = "UPDATE tarea SET id_columna = ? WHERE id_tarea = ?";
 
     // mapea una fila del resultset a un objeto task
     private Task RowToTask(ResultSet rs) throws SQLException {
@@ -297,4 +298,22 @@ public class TaskDAO {
         }
         return tasks;
     }
+
+    public boolean updateTaskColumn(int taskId, int newColumnId) throws Exception {
+    
+    try (Connection connection = DBUtil.getConnection();
+         PreparedStatement ps = connection.prepareStatement(UPDATE_TASK_COLUMN)) {
+        
+        ps.setInt(1, newColumnId);
+        ps.setInt(2, taskId);
+        
+        int rowsAffected = ps.executeUpdate();
+        return rowsAffected > 0;
+        
+    } catch (SQLException e) {
+        // En una app real, usarías el Logger
+        System.err.println("Error al actualizar la columna de la tarea en la DB: " + e.getMessage());
+        return false;
+    }
+}
 }

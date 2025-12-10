@@ -132,14 +132,6 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
             return;
 
         Image dragImage = getComponentDragImage(taskPanel);
-        try {
-            Image img = getComponentDragImage(taskPanel);
-            if (img instanceof BufferedImage) {
-                javax.imageio.ImageIO.write((BufferedImage) img, "png", new java.io.File("debug_drag.png"));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         Point dragOffset = dge.getDragOrigin();
 
         try {
