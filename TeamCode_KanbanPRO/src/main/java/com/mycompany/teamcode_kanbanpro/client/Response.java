@@ -9,6 +9,7 @@ import java.io.Serializable;
 public class Response implements Serializable{
     private boolean success;
     private String msg;
+    private String  action;
     private Object data;
 
     public Response(boolean success, String msg){
@@ -22,5 +23,7 @@ public class Response implements Serializable{
     public void setMessage(String message) { this.msg = message; }
     public Object getData() { return data; }
     public void setData(Object data) { this.data = data; }
+    public String getAction() { return action; }
+    public void setAction(String action) { this.action = action; }
     
 }

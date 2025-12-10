@@ -20,7 +20,8 @@ import java.util.logging.Logger;
  */
 public class ClientHandler implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ClientHandler.class.getName());
-    
+    private final Server server; 
+    private ObjectOutputStream out; 
     private final Socket socket;
     
     // handlers especializados por dominio
@@ -31,9 +32,9 @@ public class ClientHandler implements Runnable {
     private final ColumnServerHandler columnHandler;
     private final TaskServerHandler taskHandler;
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(Socket socket, Server server) {
         this.socket = socket;
-        
+        this.server = server;
         // inicializar daos
         UserDAO userDAO = new UserDAO();
         RoleDAO roleDAO = new RoleDAO();
@@ -56,13 +57,11 @@ public class ClientHandler implements Runnable {
         String clientAddress = socket.getInetAddress().getHostAddress();
         LOGGER.info("cliente conectado: " + clientAddress);
 
-        try (
-            ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-            ObjectInputStream in = new ObjectInputStream(socket.getInputStream())
-        ) {
-            out.flush(); // importante: flush antes de leer
+        try (ObjectInputStream in = new ObjectInputStream(socket.getInputStream())) {
+            this.out = new ObjectOutputStream(socket.getOutputStream());
+            this.out.flush();
 
-            processClientRequests(in, out);
+            processClientRequests(in, this.out);
 
         } catch (EOFException e) {
             LOGGER.info("cliente desconectado normalmente: " + clientAddress);
@@ -79,6 +78,7 @@ public class ClientHandler implements Runnable {
             LOGGER.log(Level.SEVERE, "error inesperado con cliente " + clientAddress, e);
         } finally {
             closeSocket();
+            server.deregisterHandler(this);
         }
     }
 
@@ -111,6 +111,18 @@ public class ClientHandler implements Runnable {
             out.flush();
 
             LOGGER.fine("response enviado: " + (resp.isSuccess() ? "success" : "error"));
+        }
+    }
+
+    public synchronized void sendResponse(Response resp) {
+        try {
+            if (out != null) {
+                out.writeObject(resp);
+                out.flush();
+                LOGGER.fine("broadcast enviado a " + socket.getInetAddress());
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.WARNING, "Error al enviar broadcast a cliente: " + socket.getInetAddress(), e);
         }
     }
 
@@ -186,7 +198,17 @@ public class ClientHandler implements Runnable {
             case "updatetask":
                 return new Response(false, "funcionalidad pendiente de implementar");
             case "movetask": 
-             return taskHandler.handleMoveTask(req);
+              Response resp = taskHandler.handleMoveTask(req);
+                
+                // Si fue exitoso, notifica a todos los clientes (broadcast)
+                if (resp.isSuccess()) {
+                    Response notification = new Response(true, "tarea movida por otro usuario");
+                    notification.setAction("TASK_MOVED_NOTIFICATION"); 
+                    notification.setData(req.getPayload()); 
+                    
+                    server.broadcastUpdate(notification); // Llama al broadcast del Server
+                }
+                return resp;
 
             default:
                 LOGGER.warning("accion no soportada: " + action);

@@ -3,6 +3,9 @@ package com.mycompany.teamcode_kanbanpro.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -13,6 +16,7 @@ public class Server implements AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(Server.class.getName());
     private static final int PORT = 3001;
     private static final int SHUTDOWN_TIMEOUT_SECONDS = 30;
+    private final Set<ClientHandler> connectedHandlers;
     
     private final ExecutorService threadPool;
     private ServerSocket serverSocket;
@@ -21,6 +25,7 @@ public class Server implements AutoCloseable {
     public Server() {
         this.threadPool = Executors.newCachedThreadPool();
         this.running = false;
+        this.connectedHandlers = Collections.newSetFromMap(new ConcurrentHashMap<>());
     }
 
     public void start() throws IOException {
@@ -48,8 +53,11 @@ public class Server implements AutoCloseable {
             try {
                 Socket clientSocket = serverSocket.accept();
                 LOGGER.info("nuevo cliente conectado: " + clientSocket.getInetAddress());
+                ClientHandler handler = new ClientHandler(clientSocket, this); // ¡Necesitamos pasar la referencia del Server!
                 
-                threadPool.submit(new ClientHandler(clientSocket));
+                // 2. Registrar el handler
+                connectedHandlers.add(handler);
+                threadPool.submit(handler);
                 
             } catch (IOException e) {
                 if (running) {
@@ -95,5 +103,10 @@ public class Server implements AutoCloseable {
             LOGGER.log(Level.SEVERE, "error fatal al iniciar servidor", e);
             System.exit(1);
         }
+    }
+
+    public void deregisterHandler(ClientHandler clientHandler) {
+        connectedHandlers.remove(clientHandler);
+        return;
     }
 }
