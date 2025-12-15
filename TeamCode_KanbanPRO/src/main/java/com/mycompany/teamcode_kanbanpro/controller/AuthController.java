@@ -12,7 +12,6 @@ import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
 import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.ImageIcon;
 /**
  *
  * @author Emanuel

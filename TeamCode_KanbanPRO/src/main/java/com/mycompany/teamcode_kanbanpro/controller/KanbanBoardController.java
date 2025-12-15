@@ -37,6 +37,7 @@ public class KanbanBoardController {
         this.currentProjectId = pId;
         view.setController(this);
         
+        this.connector.setKanbanController(this);
         loadKanbanBoard();
         attachListeners();
         this.view.setIconImage(ImageLoader.loadImage());
@@ -71,6 +72,7 @@ public class KanbanBoardController {
             
             
             if (resp.isSuccess()) {
+                @SuppressWarnings("unchecked")
                 List<Column> columnsServer = (List<Column>) resp.getData(); 
               
                 if (columnsServer == null || columnsServer.isEmpty()) {
@@ -137,6 +139,30 @@ public class KanbanBoardController {
         }
     }
 
+    public void hanlderIncomingTaskUpdatedNotification(Response resp) {
+        // Implementar si es necesario
+        if (resp == null) {
+            JOptionPane.showMessageDialog(view, "Respuesta nula recibida en la notificación de tarea actualizada", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        String action = resp.getAction();
+        if (action == null) {
+            JOptionPane.showMessageDialog(view, "Acción nula recibida en la notificación de tarea actualizada", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        switch (action) {
+            case "taskmoved":
+                handleIncomingTaskMovedNotification(resp);
+                break;
+            case "taskcreated":
+                handleIncomingTaskCreatedNotification(resp);
+                break;
+            default:
+                JOptionPane.showMessageDialog(view, "Acción desconocida recibida en la notificación de tarea actualizada: " + action, "Error", JOptionPane.ERROR_MESSAGE);
+                break;
+        }
+    }
+
     public void handleTaskMoved(Task task, Column newColumn) {
         try {
             Request req = new Request();
@@ -146,7 +172,6 @@ public class KanbanBoardController {
             payload.put("idTarea", task.getIdTarea());
             payload.put("idColumna", newColumn.getIdColumna()); // Usamos el ID de la columna
             req.setPayload(payload);
-            this.connector.setKanbanController(this);
             Response resp = connector.sendRequest(req);
             
             if (resp.isSuccess()) {
@@ -166,6 +191,7 @@ public class KanbanBoardController {
     public void handleIncomingTaskMovedNotification(Response resp) {
         try {
             // los datos de la tarea movida por otro usuario
+            @SuppressWarnings("unchecked")
             Map<String, Object> data = (Map<String, Object>) resp.getData();
 
             int taskId = (int) data.get("idTarea");
@@ -200,13 +226,6 @@ public class KanbanBoardController {
             if (currentColumn == null) {
                 // System.err.println(" Columna actual '" + task.getNombreColumna() + "' no encontrada");
                 JOptionPane.showMessageDialog(view, "Columna actual '" + task.getNombreColumna() + "' no encontrada","Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            // Verificar si la tarea ya está en la columna destino
-            if (currentColumn.getColumnData().getIdColumna() == newColumnId) {
-                // System.out.println("La tarea ya está en la columna destino, no se requiere actualización");
-                JOptionPane.showMessageDialog(view,"La tarea ya está en la columna destino, no se requiere actualización", "Información",JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
 
@@ -300,7 +319,6 @@ public class KanbanBoardController {
                         KanbanTaskPanel taskPanel = new KanbanTaskPanel(createdTaskFromServer, view);
 
                         // Encontrar la columna destino y agregar la tarea
-                        System.out.println("Buscando columna con ID: " + createdTaskFromServer.getIdColumna());
                         KanbanColumnPanel targetColumn = view.findColumnById(createdTaskFromServer.getIdColumna());
 
                         if (targetColumn != null) {
@@ -309,16 +327,17 @@ public class KanbanBoardController {
                             view.repaint();
 
                             handleTaskMoved(createdTaskFromServer, targetColumn.getColumnData());
-
-                            JOptionPane.showMessageDialog(view,
-                                    "Tarea creada exitosamente",
-                                    "Éxito",
-                                    JOptionPane.INFORMATION_MESSAGE);
                         } else {
-                            System.err.println("Columna destino no encontrada");
+                            JOptionPane.showMessageDialog(view,
+                                    "Error: Columna destino no encontrada para la nueva tarea",
+                                    "Error",
+                                    JOptionPane.ERROR_MESSAGE);
                         }
                     } else {
-                        System.err.println("El servidor no devolvió la tarea creada");
+                        JOptionPane.showMessageDialog(view,
+                                "Error: El servidor no devolvió la tarea creada",
+                                "Error",
+                                JOptionPane.ERROR_MESSAGE);
                     }
 
                 } else {
@@ -342,19 +361,13 @@ public class KanbanBoardController {
         try {
             // Obtener los datos de la nueva tarea desde la respuesta del servidor
             Task newTask = (Task) resp.getData();
-
             if (newTask == null) {
-                System.err.println("No se recibieron datos de la tarea creada");
                 JOptionPane.showMessageDialog(view,
                         "Error: No se recibieron datos de la tarea creada",
                         "Error",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
-            System.out.println("Notificación recibida: nueva tarea '" + newTask.getTitulo() +
-                    "' creada en proyecto " + newTask.getIdProyecto());
-
             // Verificar que la tarea pertenece al sprint actual
             if (newTask.getIdSprint() != currentSprintId) {
                 System.out.println("La tarea pertenece a otro sprint, ignorando notificación");
@@ -372,7 +385,6 @@ public class KanbanBoardController {
             KanbanColumnPanel targetColumn = view.findColumnById(newTask.getIdColumna());
 
             if (targetColumn == null) {
-                System.err.println("Columna con ID " + newTask.getIdColumna() + " no encontrada en la vista");
                 JOptionPane.showMessageDialog(view,
                         "Error: Columna destino no encontrada para la nueva tarea",
                         "Error",
@@ -390,24 +402,13 @@ public class KanbanBoardController {
             view.revalidate();
             view.repaint();
 
-            System.out.println("Tarea '" + newTask.getTitulo() + "' agregada exitosamente a columna '" +
-                    targetColumn.getColumnName() + "'");
-
-            // Opcional: Mostrar una notificación visual al usuario
-            JOptionPane.showMessageDialog(view,
-                    "Nueva tarea agregada: " + newTask.getTitulo(),
-                    "Notificación",
-                    JOptionPane.INFORMATION_MESSAGE);
-
         } catch (ClassCastException e) {
-            System.err.println("Error al convertir los datos de la tarea: " + e.getMessage());
             JOptionPane.showMessageDialog(view,
                     "Error al procesar los datos de la nueva tarea",
                     "Error",
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         } catch (Exception e) {
-            System.err.println("Error procesando notificación de tarea creada: " + e.getMessage());
             JOptionPane.showMessageDialog(view,
                     "Error al procesar notificación de nueva tarea: " + e.getMessage(),
                     "Error",

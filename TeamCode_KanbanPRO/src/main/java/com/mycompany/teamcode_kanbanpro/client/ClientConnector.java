@@ -47,10 +47,9 @@ public class ClientConnector implements AutoCloseable {
                                 "Error de comunicacion", JOptionPane.ERROR_MESSAGE);
                         continue; // Ignorar y seguir escuchando
                     }
-
                     if (resp.isBroadcast()) { // Si es una notificacion broadcast
                         if (kanbanController != null) {
-                            kanbanController.handleIncomingTaskMovedNotification(resp); // Delegar al controller Kanban
+                            kanbanController.hanlderIncomingTaskUpdatedNotification(resp); // Delegar al controller Kanban
                         }
                         continue; // No colocar en la cola de respuestas normales
                     }

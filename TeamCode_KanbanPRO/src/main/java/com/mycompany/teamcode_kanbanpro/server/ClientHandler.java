@@ -203,7 +203,20 @@ public class ClientHandler implements Runnable {
             case "gettasksbysprint":
                 return taskHandler.handleGeTasksBySprintId(getIntParam(payload, "sprintId"));
             case "createtask":
-                return taskHandler.handleCreateTask(req);
+                Response res = taskHandler.handleCreateTask(req);
+                // Si fue exitoso, notifica a todos los clientes (broadcast)
+                if (res.isSuccess()) {
+                    Response notification = new Response(true, "tarea movida por otro usuario");
+                    notification.setBroadcast(true);
+                    notification.setData(res.getData());
+                    notification.setAction("taskcreated");
+                    try {
+                        server.broadcastUpdate(notification, this); // Excluye este cliente del broadcast
+                    } catch (IOException e) {
+                        LOGGER.log(Level.WARNING, "error al hacer broadcast de movimiento de tarea", e);
+                    }
+                }
+                return res;
             case "updatetask":
                 return new Response(false, "funcionalidad pendiente de implementar");
             case "movetask": 
@@ -214,6 +227,7 @@ public class ClientHandler implements Runnable {
                     Response notification = new Response(true, "tarea movida por otro usuario");
                     notification.setBroadcast(true);
                     notification.setData(req.getPayload()); 
+                    notification.setAction("taskmoved");
                     
                     try {
                         server.broadcastUpdate(notification, this); // Excluye este cliente del broadcast
