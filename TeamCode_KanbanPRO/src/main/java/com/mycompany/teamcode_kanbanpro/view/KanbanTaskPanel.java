@@ -32,7 +32,7 @@ public class KanbanTaskPanel extends JPanel {
         setLayout(new BorderLayout(8, 8));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         setPreferredSize(new Dimension(250, 122));
-        
+        System.out.println("Configurando borde para tarea: " + this.taskData.getNombrePrioridad());
         setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(getPriorityColor(this.taskData.getNombrePrioridad()), 3),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
@@ -82,7 +82,11 @@ public class KanbanTaskPanel extends JPanel {
 
         JLabel priorityLabel = new JLabel("Prioridad: " + this.taskData.getNombrePrioridad());
         priorityLabel.setFont(new Font("Arial", Font.BOLD, 10));
-        priorityLabel.setForeground(new Color(100, 100, 100));
+        priorityLabel.setBackground(getPriorityColor(this.taskData.getNombrePrioridad()));
+        priorityLabel.setForeground(Color.decode("#0D0D0D"));
+        priorityLabel.setBorder(new EmptyBorder(3, 8, 3, 8));
+        
+        priorityLabel.setOpaque(true);
 
         JLabel groupsLabel = createGroupsLabel();
 
@@ -94,12 +98,18 @@ public class KanbanTaskPanel extends JPanel {
     }
 
     private JLabel createGroupsLabel() {
-        JLabel groupsLabel = new JLabel(" " + this.taskData.getGruposAsignados() + " ");
+        JLabel groupsLabel = new JLabel();
+
+        if(this.taskData.getGruposAsignados() == null || this.taskData.getGruposAsignados().isEmpty()) {
+            groupsLabel.setText("Sin grupos asignados");
+        } else {
+            groupsLabel.setText(" Grupos: " + this.taskData.getGruposAsignados() + " ");
+        }
         groupsLabel.setBackground(new Color(220, 240, 230)); 
         groupsLabel.setForeground(new Color(60, 100, 80));  
         groupsLabel.setBorder(new EmptyBorder(3, 8, 3, 8));
         groupsLabel.setOpaque(true);
-        groupsLabel.setFont(new Font("Arial", Font.BOLD, 10));
+        groupsLabel.setFont(new Font("Segoe UI", Font.BOLD, 10));
         
         return groupsLabel;
     }

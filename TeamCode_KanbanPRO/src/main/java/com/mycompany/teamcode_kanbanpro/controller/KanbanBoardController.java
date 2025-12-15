@@ -4,11 +4,14 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.model.Task; 
-import com.mycompany.teamcode_kanbanpro.model.Column; 
+import com.mycompany.teamcode_kanbanpro.model.Column;
+import com.mycompany.teamcode_kanbanpro.model.Priority;
 import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
+import com.mycompany.teamcode_kanbanpro.view.CreateTaskDialog;
 import com.mycompany.teamcode_kanbanpro.view.KanbanBoardView;
 import com.mycompany.teamcode_kanbanpro.view.KanbanTaskPanel;
 import com.mycompany.teamcode_kanbanpro.view.KanbanColumnPanel;
+import java.util.ArrayList;
 
 import java.util.HashMap;
 import java.util.List;
@@ -52,10 +55,10 @@ public class KanbanBoardController {
     }
     
     
-    private void handleNewTask(){
-       
-        JOptionPane.showMessageDialog(view, "Funcionalidad de crear tarea aquí");
-    }
+//    private void handleNewTask(){
+//       
+//        JOptionPane.showMessageDialog(view, "Funcionalidad de crear tarea aquí");
+//    }
     
     private void loadColumns() {
         try {
@@ -231,6 +234,187 @@ public class KanbanBoardController {
             e.printStackTrace();
         }
     }
+    
+    private void handleNewTask() {
+        try {
+            List<Column> columns = new ArrayList<>();
+
+            Request req = new Request();
+            req.setAction("getcolumnskanbanboard");
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("projectId", currentProjectId);
+            req.setPayload(payload);
+
+            Response resp = connector.sendRequest(req);
+
+            if (!resp.isSuccess() || resp.getData() == null) {
+                JOptionPane.showMessageDialog(view,
+                        "No se pudieron cargar las columnas disponibles",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            columns = (List<Column>) resp.getData();
+            CreateTaskDialog dialog = new CreateTaskDialog(view, columns);
+            dialog.setVisible(true);
+
+            if (dialog.isConfirmed()) {
+                Task newTask = dialog.getCreatedTask();
+
+                // Completar los datos faltantes
+                newTask.setIdProyecto(currentProjectId);
+                newTask.setIdSprint(currentSprintId);
+                newTask.setCreadoPor(this.connector.getUserID());
+
+                // Enviar la solicitud al servidor
+                Request createReq = new Request();
+                createReq.setAction("createtask");
+
+                Map<String, Object> taskPayload = new HashMap<>();
+                taskPayload.put("idProyecto", newTask.getIdProyecto());
+                taskPayload.put("idPrioridad", newTask.getIdPrioridad());
+                taskPayload.put("idSprint", newTask.getIdSprint());
+                taskPayload.put("idColumna", newTask.getIdColumna());
+                taskPayload.put("idPrioridad", newTask.getIdPrioridad());
+                taskPayload.put("titulo", newTask.getTitulo());
+                taskPayload.put("descripcion", newTask.getDescripcion());
+                taskPayload.put("creadoPor", newTask.getCreadoPor());
+
+                if (newTask.getFechaVencimiento() != null) {
+                    taskPayload.put("fechaVencimiento", newTask.getFechaVencimiento().toString());
+                }
+
+                createReq.setPayload(taskPayload);
+
+                Response createResp = connector.sendRequest(createReq);
+
+                if (createResp.isSuccess()) {
+                    // Obtener la tarea creada con su ID del servidor
+                    Task createdTaskFromServer = (Task) createResp.getData();
+
+                    if (createdTaskFromServer != null) {
+                        // Crear el panel visual de la tarea
+                        System.out.println("Tarea creada con ID: " + createdTaskFromServer.getIdTarea() + " nombre"
+                                + createdTaskFromServer.getNombrePrioridad());
+                        KanbanTaskPanel taskPanel = new KanbanTaskPanel(createdTaskFromServer, view);
+
+                        // Encontrar la columna destino y agregar la tarea
+                        System.out.println("Buscando columna con ID: " + createdTaskFromServer.getIdColumna());
+                        KanbanColumnPanel targetColumn = view.findColumnById(createdTaskFromServer.getIdColumna());
+
+                        if (targetColumn != null) {
+                            targetColumn.addTask(taskPanel);
+                            view.revalidate();
+                            view.repaint();
+
+                            handleTaskMoved(createdTaskFromServer, targetColumn.getColumnData());
+
+                            JOptionPane.showMessageDialog(view,
+                                    "Tarea creada exitosamente",
+                                    "Éxito",
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        } else {
+                            System.err.println("Columna destino no encontrada");
+                        }
+                    } else {
+                        System.err.println("El servidor no devolvió la tarea creada");
+                    }
+
+                } else {
+                    JOptionPane.showMessageDialog(view,
+                            "Error al crear la tarea: " + createResp.getMessage(),
+                            "Error del Servidor",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+            }
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view,
+                    "Error al crear la tarea: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+    }
+
+    public void handleIncomingTaskCreatedNotification(Response resp) {
+        try {
+            // Obtener los datos de la nueva tarea desde la respuesta del servidor
+            Task newTask = (Task) resp.getData();
+
+            if (newTask == null) {
+                System.err.println("No se recibieron datos de la tarea creada");
+                JOptionPane.showMessageDialog(view,
+                        "Error: No se recibieron datos de la tarea creada",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            System.out.println("Notificación recibida: nueva tarea '" + newTask.getTitulo() +
+                    "' creada en proyecto " + newTask.getIdProyecto());
+
+            // Verificar que la tarea pertenece al sprint actual
+            if (newTask.getIdSprint() != currentSprintId) {
+                System.out.println("La tarea pertenece a otro sprint, ignorando notificación");
+                return;
+            }
+
+            // Verificar si la tarea ya existe en la vista (evitar duplicados)
+            KanbanTaskPanel existingTaskPanel = view.findTaskPanelById(newTask.getIdTarea());
+            if (existingTaskPanel != null) {
+                System.out.println("La tarea ya existe en la vista, no se requiere agregar");
+                return;
+            }
+
+            // Buscar la columna destino por ID
+            KanbanColumnPanel targetColumn = view.findColumnById(newTask.getIdColumna());
+
+            if (targetColumn == null) {
+                System.err.println("Columna con ID " + newTask.getIdColumna() + " no encontrada en la vista");
+                JOptionPane.showMessageDialog(view,
+                        "Error: Columna destino no encontrada para la nueva tarea",
+                        "Error",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Crear el panel visual de la tarea
+            KanbanTaskPanel taskPanel = new KanbanTaskPanel(newTask, view);
+
+            // Agregar la tarea a la columna destino
+            targetColumn.addTask(taskPanel);
+
+            // Refrescar la interfaz
+            view.revalidate();
+            view.repaint();
+
+            System.out.println("Tarea '" + newTask.getTitulo() + "' agregada exitosamente a columna '" +
+                    targetColumn.getColumnName() + "'");
+
+            // Opcional: Mostrar una notificación visual al usuario
+            JOptionPane.showMessageDialog(view,
+                    "Nueva tarea agregada: " + newTask.getTitulo(),
+                    "Notificación",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (ClassCastException e) {
+            System.err.println("Error al convertir los datos de la tarea: " + e.getMessage());
+            JOptionPane.showMessageDialog(view,
+                    "Error al procesar los datos de la nueva tarea",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Error procesando notificación de tarea creada: " + e.getMessage());
+            JOptionPane.showMessageDialog(view,
+                    "Error al procesar notificación de nueva tarea: " + e.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
+        }
+}
 
     public boolean isVisible() {
         return view.isVisible();

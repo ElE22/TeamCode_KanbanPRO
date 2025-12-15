@@ -50,20 +50,20 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     private void createTopPanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
         
-        // Panel superior con titulo y botón
+        // Panel superior con titulo y boton
         JPanel topPanel = new JPanel(new BorderLayout());
-        topPanel.setBackground(Color.WHITE);
+        topPanel.setBackground(new Color(41, 128, 185));
         topPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
         
         JLabel titleLabel = new JLabel("Pizarra Kanban");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        titleLabel.setForeground(new Color(50, 50, 50));
+        titleLabel.setForeground(Color.WHITE);
         topPanel.add(titleLabel, BorderLayout.WEST);
         
         createTaskButton = new JButton("+ Nueva Tarea");
         createTaskButton.setFont(new Font("Arial", Font.BOLD, 13));
         createTaskButton.setForeground(Color.WHITE);
-        createTaskButton.setBackground(new Color(100, 149, 237));
+        createTaskButton.setBackground(new Color(230, 126, 34));
         createTaskButton.setFocusPainted(false);
         createTaskButton.setBorderPainted(false);
         createTaskButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -91,7 +91,7 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     
     public KanbanColumnPanel findColumnById(int columnId) {
         for (KanbanColumnPanel columnPanel : columnsMap.values()) {
-            if (columnPanel.getColumnData().getIdColumna() == columnId) { // Asume que columnData es el objeto Column
+            if (columnPanel.getColumnData().getIdColumna() == columnId) {
                 return columnPanel;
             }
         }
@@ -101,7 +101,7 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     public KanbanTaskPanel findTaskPanelById(int taskId) {
         // Buscar tarea en todas las columnas
         for (KanbanColumnPanel columnPanel : columnsMap.values()) {
-            // Usar el nuevo método de la columna para buscar la tarea por id
+            // Usar el nuevo metodo de la columna para buscar la tarea por id
             KanbanTaskPanel taskPanel = columnPanel.getTaskPanel(taskId);
             if (taskPanel != null) return taskPanel;
         }

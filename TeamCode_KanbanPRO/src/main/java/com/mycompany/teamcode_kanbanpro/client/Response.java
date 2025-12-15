@@ -12,6 +12,7 @@ public class Response implements Serializable{
     private boolean isBroadcast;
     private Object data;
     private String requestId;
+    private String action;
 
     public Response(boolean success, String msg){
         this.success = success;
@@ -28,5 +29,7 @@ public class Response implements Serializable{
     public void setData(Object data) { this.data = data; }
     public boolean isBroadcast() { return isBroadcast; }
     public void setBroadcast(boolean isBroadcast) { this.isBroadcast = isBroadcast; }
+    public String getAction() { return action; }
+    public void setAction(String action) { this.action = action; }
     
 }

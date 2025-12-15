@@ -6,8 +6,12 @@ package com.mycompany.teamcode_kanbanpro.server.handler;
 
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
+import com.mycompany.teamcode_kanbanpro.dao.PriorityDAO;
 import com.mycompany.teamcode_kanbanpro.dao.TaskDAO;
+import com.mycompany.teamcode_kanbanpro.model.Priority;
 import com.mycompany.teamcode_kanbanpro.model.Task;
+
+import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -17,9 +21,12 @@ import java.util.Map;
  */
 public class TaskServerHandler {
     TaskDAO taskDAO;
+    PriorityDAO priorityDAO;
 
-    public TaskServerHandler(TaskDAO taskDAO) {
+    public TaskServerHandler(TaskDAO taskDAO, PriorityDAO priorityDAO) {
         this.taskDAO = taskDAO;
+        this.priorityDAO = priorityDAO;
+
     }
     
     public Response handleGeTasksBySprintId(int sprintId) {
@@ -57,6 +64,40 @@ public class TaskServerHandler {
             // Loguear el error interno
             System.err.println("Error interno al mover tarea: " + e.getMessage());
             return new Response(false, "Error interno del servidor al mover tarea.");
+        }
+    }
+
+
+    public Response handleCreateTask(Request req) {
+        Map<String, Object> payload = req.getPayload();
+        try {
+            Priority p = priorityDAO.selectPriorityById((Integer) payload.get("idPrioridad"));
+            Task newTask = new Task();
+            newTask.setIdPrioridad(p.getIdPrioridad());
+            newTask.setNombrePrioridad(p.getNombre());
+            newTask.setIdColumna((Integer) payload.get("idColumna"));
+            newTask.setIdProyecto((Integer) payload.get("idProyecto"));
+            newTask.setIdSprint((Integer) payload.get("idSprint"));
+            newTask.setTitulo((String) payload.get("titulo"));
+            newTask.setDescripcion((String) payload.get("descripcion"));
+            newTask.setCreadoPor((Integer) payload.get("creadoPor"));
+            if (payload.containsKey("fechaVencimiento")) {
+                newTask.setFechaVencimiento(Date.valueOf((String) payload.get("fechaVencimiento")));
+            }
+
+            int generatedId = taskDAO.insertTask(newTask);
+            if (generatedId != -1) {
+                Task createdTask = taskDAO.selectTaskWithGroupsById(generatedId);
+                Response r = new Response(true, "Tarea creada exitosamente.");
+                r.setData(createdTask);
+                return r;
+            } else {
+                return new Response(false, "No se pudo crear la tarea.");
+            }
+        } catch (Exception e) {
+            // Loguear el error interno
+            System.err.println("Error interno al crear tarea: " + e.getMessage());
+            return new Response(false, "Error interno del servidor al crear tarea.");
         }
     }
 }

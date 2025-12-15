@@ -31,6 +31,8 @@ public class ClientHandler implements Runnable {
     private final SprintServerHandler sprintHandler;
     private final ColumnServerHandler columnHandler;
     private final TaskServerHandler taskHandler;
+    private final PriorityServerHandler priorityHandler;
+    
 
     public ClientHandler(Socket socket, Server server) {
         this.socket = socket;
@@ -42,6 +44,7 @@ public class ClientHandler implements Runnable {
         SprintDAO sprintDAO = new SprintDAO();
         ColumnDAO columnDAO = new ColumnDAO();
         TaskDAO taskDAO = new TaskDAO();
+        PriorityDAO priorityDAO = new PriorityDAO();
         
         // inicializar handlers
         this.userHandler = new UserServerHandler(userDAO, roleDAO);
@@ -49,7 +52,8 @@ public class ClientHandler implements Runnable {
         this.projectHandler = new ProjectServerHandler(projectDAO, userDAO);
         this.sprintHandler = new SprintServerHandler(sprintDAO);
         this.columnHandler = new ColumnServerHandler(columnDAO);
-        this.taskHandler = new TaskServerHandler(taskDAO);
+        this.taskHandler = new TaskServerHandler(taskDAO, priorityDAO);
+        this.priorityHandler = new PriorityServerHandler(priorityDAO);
     }
 
     @Override
@@ -199,7 +203,7 @@ public class ClientHandler implements Runnable {
             case "gettasksbysprint":
                 return taskHandler.handleGeTasksBySprintId(getIntParam(payload, "sprintId"));
             case "createtask":
-                return new Response(false, "funcionalidad pendiente de implementar");
+                return taskHandler.handleCreateTask(req);
             case "updatetask":
                 return new Response(false, "funcionalidad pendiente de implementar");
             case "movetask": 
@@ -218,6 +222,9 @@ public class ClientHandler implements Runnable {
                     }
                 }
                 return resp;
+            //prioridades
+            case "getpriorityidbyname":
+                return priorityHandler.handleGetPriorityByName(req);
 
             default:
                 LOGGER.warning("accion no soportada: " + action);

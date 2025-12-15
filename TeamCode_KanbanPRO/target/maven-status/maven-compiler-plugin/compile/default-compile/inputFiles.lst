@@ -9,8 +9,10 @@ C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\mai
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\controller\ProyectosCardController.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\controller\RegisterUserController.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\controller\SprintController.java
+C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\controller\TaskMovedHandler.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\dao\ColumnDAO.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\dao\GroupDAO.java
+C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\dao\PriorityDAO.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\dao\ProjectDAO.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\dao\RoleDAO.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\dao\SprintDAO.java
@@ -18,6 +20,7 @@ C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\mai
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\dao\UserDAO.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\model\Column.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\model\Group.java
+C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\model\Priority.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\model\Project.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\model\Role.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\model\Sprint.java
@@ -25,6 +28,7 @@ C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\mai
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\model\User.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\server\ClientHandler.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\server\handler\ColumnServerHandler.java
+C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\server\handler\PriorityServerHandler.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\server\handler\ProjectServerHandler.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\server\handler\RoleServerHandler.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\server\handler\SprintServerHandler.java
@@ -38,6 +42,7 @@ C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\mai
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\ColumnTransferHandler.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\CrearProyectoView.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\CrearSprintView.java
+C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\CreateTaskDialog.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\KanbanBoardView.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\KanbanColumnPanel.java
 C:\Users\escobe11\Documents\GitHub\TeamCode_KanbanPRO\TeamCode_KanbanPRO\src\main\java\com\mycompany\teamcode_kanbanpro\view\KanbanTaskPanel.java

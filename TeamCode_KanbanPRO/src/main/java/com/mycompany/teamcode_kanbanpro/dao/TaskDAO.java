@@ -68,6 +68,40 @@ public class TaskDAO {
         WHERE t.id_sprint = ?
         GROUP BY t.id_tarea
     """;
+
+    private static final String BASE_SELECT_WITH_GROUPS_BY_TaskID = """
+            SELECT 
+                t.id_tarea,
+                t.id_proyecto,
+                p.nombre AS nombre_proyecto,
+                t.id_sprint,
+                s.nombre AS nombre_sprint,
+                t.id_columna,
+                ck.nombre AS nombre_columna,
+                t.id_prioridad,
+                pr.nombre AS nombre_prioridad,
+                t.titulo,
+                t.descripcion,
+                t.fecha_creacion,
+                t.fecha_vencimiento,
+                t.fecha_modificacion,
+                t.creado_por,
+                uc.nombre AS nombre_creador,
+                t.id_tarea_padre,
+                tp.titulo AS titulo_tarea_padre,
+                GROUP_CONCAT(g.nombre SEPARATOR ', ') AS grupos
+            FROM tarea t
+            JOIN proyecto p ON t.id_proyecto = p.id_proyecto
+            JOIN columna_kanban ck ON t.id_columna = ck.id_columna
+            JOIN prioridad pr ON t.id_prioridad = pr.id_prioridad
+            JOIN usuario uc ON t.creado_por = uc.id_usuario
+            LEFT JOIN sprint s ON t.id_sprint = s.id_sprint
+            LEFT JOIN tarea tp ON t.id_tarea_padre = tp.id_tarea
+            LEFT JOIN proyecto_grupo pg ON t.id_proyecto = pg.id_proyecto
+            LEFT JOIN grupo g ON pg.id_grupo = g.id_grupo
+            WHERE t.id_tarea = ? 
+            GROUP BY t.id_tarea
+            """;
             
     // consultas CRUD
     private static final String INSERT_TASK = 
@@ -247,7 +281,6 @@ public class TaskDAO {
         return rowDeleted;
     }
     
-    // --- metodos de asignacion  ---
 
     // asigna un usuario a una tarea
     public boolean assignUserToTask(int userId, int taskId) {
@@ -299,6 +332,28 @@ public class TaskDAO {
         return tasks;
     }
 
+    public Task selectTaskWithGroupsById(int taskId) {
+        Task task = null;
+        
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(BASE_SELECT_WITH_GROUPS_BY_TaskID)) {
+            
+            preparedStatement.setInt(1, taskId);
+            
+            try (ResultSet rs = preparedStatement.executeQuery()) {
+                if (rs.next()) {
+                    task = RowToTask(rs);
+                }
+            }
+            
+        } catch (Exception e) {
+            System.err.println("Error al obtener tarea con grupos por ID: " + taskId);
+            e.printStackTrace();
+        }
+        return task;
+
+    }
+
     public boolean updateTaskColumn(int taskId, int newColumnId) throws Exception {
     
     try (Connection connection = DBUtil.getConnection();
@@ -311,7 +366,6 @@ public class TaskDAO {
         return rowsAffected > 0;
         
     } catch (SQLException e) {
-        // En una app real, usarías el Logger
         System.err.println("Error al actualizar la columna de la tarea en la DB: " + e.getMessage());
         return false;
     }
