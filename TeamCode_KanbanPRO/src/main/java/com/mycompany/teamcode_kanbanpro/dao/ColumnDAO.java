@@ -20,11 +20,9 @@ import java.util.List;
 
 public class ColumnDAO {
 
-    private static final String SELECT_COLUMNS_BY_PROJECT = 
-        "SELECT * FROM columna_kanban WHERE id_proyecto = ? ORDER BY orden";
-    
-    private static final String SELECT_COLUMN_BY_ID = 
-        "SELECT * FROM columna_kanban WHERE id_columna = ?";
+    private static final String SELECT_COLUMNS_BY_PROJECT = "SELECT * FROM columna_kanban WHERE id_proyecto = ? ORDER BY orden";
+    private static final String SELECT_COLUMN_BY_ID = "SELECT * FROM columna_kanban WHERE id_columna = ?";
+    private static final String INSERT_COLUMN = "INSERT INTO columna_kanban (id_proyecto, nombre, orden, color) VALUES (?, ?, ?, ?)";
 
     private Column rowToColumn(ResultSet rs) throws SQLException {
         Column column = new Column();
@@ -72,5 +70,21 @@ public class ColumnDAO {
             e.printStackTrace();
         }
         return column;
+    }
+
+    public void insertColumn(Column column) throws Exception {
+        try (Connection connection = DBUtil.getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_COLUMN)) {
+            preparedStatement.setInt(1, column.getIdProyecto());
+            preparedStatement.setString(2, column.getNombre());
+            preparedStatement.setInt(3, column.getOrden());
+            preparedStatement.setString(4, column.getColor());
+            
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Error al insertar columna: " + column);
+            e.printStackTrace();
+        }
+
     }
 }

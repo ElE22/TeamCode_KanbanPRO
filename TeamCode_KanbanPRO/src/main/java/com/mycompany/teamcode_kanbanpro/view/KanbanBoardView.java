@@ -33,7 +33,8 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     private JButton createTaskButton;
     private KanbanBoardController controller;
     private final Map<String, KanbanColumnPanel> columnsMap = new HashMap<>();
-    private JPanel boardPanel; 
+    private JPanel boardPanel;
+    private JLabel titleLabel; 
     
     public KanbanBoardView() {
         initializeFrame();
@@ -41,7 +42,6 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     }
 
     private void initializeFrame() {
-        setTitle("Pizarra Kanban - Proyecto Actual");
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setSize(1200, 700);
         setLocationRelativeTo(null);
@@ -55,7 +55,7 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
         topPanel.setBackground(new Color(41, 128, 185));
         topPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
         
-        JLabel titleLabel = new JLabel("Pizarra Kanban");
+        titleLabel = new JLabel("");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         titleLabel.setForeground(Color.WHITE);
         topPanel.add(titleLabel, BorderLayout.WEST);
@@ -200,6 +200,10 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     
     public KanbanColumnPanel findColumnByName(String columnName) {
         return columnsMap.get(columnName);
+    }
+
+    public void setTitleLabel(String title) {
+        this.titleLabel.setText(title);
     }
 
 }

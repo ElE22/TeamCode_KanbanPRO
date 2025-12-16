@@ -30,6 +30,9 @@ public class PantallaPrincipalController {
         attachListeners();
         view.setIconImage(ImageLoader.loadImage());
         view.setVisible(true);
+        
+        // Auto-seleccionar el panel de proyectos al iniciar
+        handleProyectosClick(null);
     }
     
     private void configurarPermisosGrupos() {
@@ -50,9 +53,6 @@ public class PantallaPrincipalController {
     }
 
     private void attachListeners() {
-
-        view.getBtnInicio().addActionListener(e -> view.mostrarPanel("Dashboard"));
-
         view.getBtnGrupos().addActionListener(this::handleGruposClick);
 
         view.getBtnProyectos().addActionListener(this::handleProyectosClick);

@@ -20,7 +20,6 @@ public class PantallaPrincipal extends JFrame {
     private GrupoView panelGrupos;
     
     JLabel lblUsuario;
-    private JButton btnInicio;
     private JButton btnProyectos;
 
     private JButton btnGrupos;
@@ -28,10 +27,6 @@ public class PantallaPrincipal extends JFrame {
     
     public void mostrarPanel(String nombrePanel) {
         cardLayout.show(panelCentral, nombrePanel);
-    }
-    
-    public JButton getBtnInicio() {
-        return btnInicio;
     }
 
     public JButton getBtnProyectos() {
@@ -98,14 +93,10 @@ public class PantallaPrincipal extends JFrame {
         menuLateral.setBackground(new Color(38, 50, 56));
         menuLateral.setPreferredSize(new Dimension(180, 0));
         menuLateral.setBorder(BorderFactory.createEmptyBorder(80, 20, 80, 20));
-
-        btnInicio = crearBotonMenu("Inicio");
         btnProyectos = crearBotonMenu("Proyectos");
        
         btnGrupos = crearBotonMenu("Grupos");
         btnSalir = crearBotonMenu("Cerrar Sesión");
-
-        menuLateral.add(btnInicio);
         menuLateral.add(btnProyectos);
        
         menuLateral.add(btnGrupos);
@@ -117,8 +108,6 @@ public class PantallaPrincipal extends JFrame {
         cardLayout = new CardLayout();
         panelCentral = new JPanel(cardLayout);
 
-        JPanel panelDashboard = new JPanel();
-        panelDashboard.add(new JLabel("Bienvenido al Dashboard"));
 
         panelProyectos = new ProyectosView();
         
@@ -129,7 +118,6 @@ public class PantallaPrincipal extends JFrame {
         panelTareas.add(new JLabel("Gestión de Tareas"));
 
         // añadimos los paneles al CardLayout
-        panelCentral.add(panelDashboard, "Dashboard");
         panelCentral.add(panelProyectos, "Proyectos");
         panelCentral.add(panelTareas, "Tareas");
         // === NUEVA INTEGRACIÓN: Registrar panel de grupos ===

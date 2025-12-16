@@ -34,6 +34,8 @@ public class ProyectosCardController {
 
     private int proyectoSeleccionadoId = -1;
     private int sprintSeleccionadoId = -1;
+    private String proyectoSeleccionadoNombre = null;
+    private String sprintSeleccionadoNombre = null;
     
     // Variable para verificar si usuario tiene grupos 
     private boolean usuarioTieneGrupos = false;
@@ -58,12 +60,16 @@ public class ProyectosCardController {
         view.getTablaProyectos().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                sprintSeleccionadoId = -1; 
+                sprintSeleccionadoNombre = null;
                 JTable tabla = (JTable) e.getSource();
                 int filaSeleccionada = tabla.getSelectedRow();
 
                 if (filaSeleccionada != -1) {
                     proyectoSeleccionadoId = (Integer) modeloProyectos.getValueAt(filaSeleccionada, 0);
+                    proyectoSeleccionadoNombre = (String) modeloProyectos.getValueAt(filaSeleccionada, 1);
                     cargarSprintsParaProyecto(proyectoSeleccionadoId);
+                    
                 }
             }
         });
@@ -77,6 +83,7 @@ public class ProyectosCardController {
 
                 if (filaSeleccionada != -1) {
                     sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0);
+                    sprintSeleccionadoNombre = (String) modeloSprints.getValueAt(filaSeleccionada, 1);
 
                     if (kanbanControllerAbierto != null && kanbanControllerAbierto.isVisible()) {
                         kanbanControllerAbierto.toFront();
@@ -86,7 +93,8 @@ public class ProyectosCardController {
                     kanbanControllerAbierto = new KanbanBoardController(
                             connector,
                             sprintSeleccionadoId,
-                            proyectoSeleccionadoId);
+                            proyectoSeleccionadoId, proyectoSeleccionadoNombre,
+                            sprintSeleccionadoNombre);
 
                     kanbanControllerAbierto.getView().addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override

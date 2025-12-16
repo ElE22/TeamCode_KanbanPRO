@@ -30,18 +30,24 @@ public class KanbanBoardController {
     private final ClientConnector connector;
     private final int currentSprintId; 
     private final int currentProjectId; 
-    public KanbanBoardController( ClientConnector connector, int sprintId, int pId) {
+    private final String currentProjectName;
+    private final String currentSprintName;
+
+    public KanbanBoardController( ClientConnector connector, int sprintId, int pId, String pNombre, String sNombre) {
         this.view = new KanbanBoardView();
         this.connector = connector;
         this.currentSprintId = sprintId;
         this.currentProjectId = pId;
+        this.currentProjectName = pNombre;
+        this.currentSprintName = sNombre;
         view.setController(this);
         
         this.connector.setKanbanController(this);
         loadKanbanBoard();
         attachListeners();
         this.view.setIconImage(ImageLoader.loadImage());
-        
+        view.setTitle("Pizarra Kanban - Proyecto: " + currentProjectName + " | Sprint: " + currentSprintName);
+        view.setTitleLabel("Proyecto (" + currentProjectName + ") | Sprint (" + currentSprintName + ")");
         this.view.setVisible(true);
     }
     

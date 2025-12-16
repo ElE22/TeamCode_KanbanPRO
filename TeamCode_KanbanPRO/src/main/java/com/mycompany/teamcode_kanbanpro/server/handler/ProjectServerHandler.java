@@ -11,6 +11,7 @@ import com.mycompany.teamcode_kanbanpro.dao.ColumnDAO;
 import com.mycompany.teamcode_kanbanpro.dao.GroupDAO;
 import com.mycompany.teamcode_kanbanpro.dao.UserDAO;
 import com.mycompany.teamcode_kanbanpro.model.Project;
+import com.mycompany.teamcode_kanbanpro.model.Column;
 import com.mycompany.teamcode_kanbanpro.model.Group;
 
 import java.util.List;
@@ -29,6 +30,8 @@ public class ProjectServerHandler {
     public ProjectServerHandler(ProjectDAO projectDAO, UserDAO userDAO) {
         this.projectDAO = projectDAO;
         this.userDAO = userDAO;
+        this.columnDAO = new ColumnDAO();
+        this.groupDAO = new GroupDAO();
     }
     
     public ProjectServerHandler(ProjectDAO projectDAO, UserDAO userDAO, GroupDAO groupDAO) {
@@ -53,7 +56,7 @@ public class ProjectServerHandler {
                 return r;
             }
     
-            // Obtener proyectos con información de grupos
+            // Obtener proyectos con informacion de grupos
             List<Project> projects = projectDAO.selectProjectsByUserIdWithGroups(userId);
             
             System.out.println("[ProjectHandler] Proyectos encontrados: " + 
@@ -166,18 +169,23 @@ public class ProjectServerHandler {
             System.out.println("[ProjectHandler] Proyecto asignado al grupo '" + grupo.getNombre() + "'");
             
             // Crear columnas Kanban por defecto
-            crearColumnasKanbanPorDefecto(projectId);
+            Boolean isSuccess = crearColumnasKanbanPorDefecto(projectId);
+            
             
             // PREPARAR RESPUESTA 
             newProject.setIdProyecto(projectId);
             newProject.setGruposPertenencia(grupo.getNombre());
             
-            Response r = new Response(true, 
+            Response r;
+
+            if (!isSuccess) {
+                r = new Response(true, 
+                    "Proyecto creado, pero hubo un error al crear las columnas Kanban por defecto.");
+            } else {
+                r = new Response(true, 
                 "Proyecto '" + nombre + "' creado exitosamente en el grupo '" + grupo.getNombre() + "'");
-            r.setData(newProject);
-            
-            System.out.println("[ProjectHandler] Proyecto creado exitosamente!");
-            
+                r.setData(newProject);
+            }
             return r;
             
         } catch (ClassCastException e) {
@@ -193,10 +201,8 @@ public class ProjectServerHandler {
     /**
      * Crea las columnas Kanban por defecto para un proyecto nuevo
      */
-    private void crearColumnasKanbanPorDefecto(int projectId) {
+    private boolean crearColumnasKanbanPorDefecto(int projectId) {
         try {
-            // Nota: Necesitarías un ColumnaKanbanDAO para esto
-            // Por ahora solo logueamos
             String[][] columnasDefault = {
                 {"Backlog", "1", "#9E9E9E"},
                 {"To Do", "2", "#2196F3"},
@@ -204,13 +210,21 @@ public class ProjectServerHandler {
                 {"Done", "4", "#4CAF50"}
             };
 
-
-            
+            for (String[] colData : columnasDefault) {
+                
+                Column column = new Column();
+                column.setIdProyecto(projectId);
+                column.setNombre(colData[0]);
+                column.setOrden(Integer.parseInt(colData[1]));
+                column.setColor(colData[2]);
+                this.columnDAO.insertColumn(column);
+            }
             System.out.println("[ProjectHandler] Se deben crear columnas Kanban para proyecto " + projectId);
-            System.out.println("  (Implementar ColumnaKanbanDAO para crear automáticamente)");
-            
+            return true;
         } catch (Exception e) {
             System.err.println("[ProjectHandler] Error al crear columnas: " + e.getMessage());
+            e.printStackTrace();
+            return false;
         }
     }
     

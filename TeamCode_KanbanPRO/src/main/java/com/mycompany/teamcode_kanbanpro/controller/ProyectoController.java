@@ -25,8 +25,7 @@ public class ProyectoController {
     private ClientConnector connector;
     private Runnable onProyectoCreado;
 
-    public ProyectoController(CrearProyectoView view, ClientConnector connector,
-            Runnable onProyectoCreado) {
+    public ProyectoController(CrearProyectoView view, ClientConnector connector,Runnable onProyectoCreado) {
         this.view = view;
         this.connector = connector;
         this.onProyectoCreado = onProyectoCreado;
@@ -49,20 +48,11 @@ public class ProyectoController {
         );
     }
 
-    // === NUEVA INTEGRACIÓN: Método completo para cargar grupos del usuario ===
-    /**
-     * Carga los grupos a los que pertenece el usuario actual.
-     * Solo estos grupos estarán disponibles para asignar al proyecto.
-     */
+   
     private void cargarGruposDelUsuario() {
         try {
             Request req = new Request();
-            req.setAction("getGroupsByUser");
-            
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("idUsuario", connector.getUserID());
-            req.setPayload(payload);
-            
+            req.setAction("getallgroups");
             Response resp = connector.sendRequest(req);
             
             if (resp.isSuccess()) {
