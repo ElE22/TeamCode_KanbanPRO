@@ -4,6 +4,7 @@ import com.mycompany.teamcode_kanbanpro.client.ClientConnector;
 import com.mycompany.teamcode_kanbanpro.util.ImageLoader;
 import com.mycompany.teamcode_kanbanpro.view.PantallaPrincipal;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
+import com.mycompany.teamcode_kanbanpro.view.GrupoView;
 import java.awt.event.ActionEvent;
 import javax.swing.JOptionPane;
 
@@ -18,15 +19,24 @@ public class PantallaPrincipalController {
     private PermissionManager permission;
 
     private ProyectosCardController proyectosController = null;
+    private GroupController grupoController = null;
 
     public PantallaPrincipalController(ClientConnector connector) {
         this.view = new PantallaPrincipal();
         this.connector = connector;
         this.permission = new PermissionManager(this.connector.getUserRole());
         putNameUserBar();
+        configurarPermisosGrupos();
         attachListeners();
         view.setIconImage(ImageLoader.loadImage());
         view.setVisible(true);
+    }
+    
+    private void configurarPermisosGrupos() {
+   
+            // Desarrolladores pueden ver sus grupos pero no crear/gestionar
+            view.getBtnGrupos().setVisible(true);
+            view.getBtnGrupos().setEnabled(true);
     }
 
     private void putNameUserBar() {
@@ -43,13 +53,13 @@ public class PantallaPrincipalController {
 
         view.getBtnInicio().addActionListener(e -> view.mostrarPanel("Dashboard"));
 
-        
+        view.getBtnGrupos().addActionListener(this::handleGruposClick);
 
         view.getBtnProyectos().addActionListener(this::handleProyectosClick);
 
         view.getBtnSalir().addActionListener(this::handleLogout);
     }
-
+    //nuevo
     private void handleProyectosClick(ActionEvent e) {
         if (proyectosController == null) {
             ProyectosView proyectosView = view.getPanelProyectos();
@@ -60,6 +70,18 @@ public class PantallaPrincipalController {
         }
         view.mostrarPanel("Proyectos");
     }
+    
+     private void handleGruposClick(ActionEvent e) {
+        if (grupoController == null) {
+            GrupoView grupoView = view.getPanelGrupos();
+            grupoController = new GroupController(grupoView, this.connector, permission);
+        } else {
+            // Refrescar datos al volver al panel
+            grupoController.cargarTodosLosGrupos();
+        }
+        view.mostrarPanel("Grupos");
+    }
+    
 
     private void handleLogout(ActionEvent e) {
         int resp = JOptionPane.showConfirmDialog(view, "¿Deseas cerrar sesión?", "Confirmar", JOptionPane.YES_NO_OPTION);
@@ -75,6 +97,18 @@ public class PantallaPrincipalController {
             view.dispose();
             new AuthController();
         }
+    }
+    
+     public PantallaPrincipal getView() {
+        return view;
+    }
+    
+    public ClientConnector getConnector() {
+        return connector;
+    }
+    
+    public PermissionManager getPermission() {
+        return permission;
     }
 
 }

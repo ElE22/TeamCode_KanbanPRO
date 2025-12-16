@@ -32,6 +32,7 @@ public class ClientHandler implements Runnable {
     private final ColumnServerHandler columnHandler;
     private final TaskServerHandler taskHandler;
     private final PriorityServerHandler priorityHandler;
+    private final GrupoServerHandler grupoHandler;
     
 
     public ClientHandler(Socket socket, Server server) {
@@ -45,6 +46,7 @@ public class ClientHandler implements Runnable {
         ColumnDAO columnDAO = new ColumnDAO();
         TaskDAO taskDAO = new TaskDAO();
         PriorityDAO priorityDAO = new PriorityDAO();
+        GroupDAO groupDAO = new GroupDAO();
         
         // inicializar handlers
         this.userHandler = new UserServerHandler(userDAO, roleDAO);
@@ -54,6 +56,7 @@ public class ClientHandler implements Runnable {
         this.columnHandler = new ColumnServerHandler(columnDAO);
         this.taskHandler = new TaskServerHandler(taskDAO, priorityDAO);
         this.priorityHandler = new PriorityServerHandler(priorityDAO);
+        this.grupoHandler = new GrupoServerHandler(groupDAO, userDAO);
     }
 
     @Override
@@ -174,6 +177,38 @@ public class ClientHandler implements Runnable {
             // roles
             case "getroles":
                 return roleHandler.handleGetRoles();
+                
+            // GRUPOS 
+            case "getallgroups":
+                return grupoHandler.handleGetAllGroups();
+                
+            case "getgroupsbyuser":
+                return grupoHandler.handleGetGroupsByUser(req);
+                
+            case "creategroup":
+                return grupoHandler.handleCreateGroup(req);
+                
+            case "getusersbygroup":
+                return grupoHandler.handleGetUsersByGroup(req);
+                
+            case "getallusers":
+                return grupoHandler.handleGetAllUsers();
+                
+            case "joingroup":
+                return grupoHandler.handleJoinGroup(req);
+                
+            case "leavegroup":
+                return grupoHandler.handleLeaveGroup(req);
+                
+            case "getgroupbyid":
+                return grupoHandler.handleGetGroupById(req);
+                
+            case "getgroupsbyproject":
+                return grupoHandler.handleGetGroupsByProject(req);
+                
+            case "checkuserhasgroup":
+                return handleCheckUserHasGroup(req);
+
 
             // projects
             case "getprojectsbyuser":
@@ -243,6 +278,30 @@ public class ClientHandler implements Runnable {
             default:
                 LOGGER.warning("accion no soportada: " + action);
                 return new Response(false, "accion no soportada: " + action);
+        }
+    }
+    
+    // Verifica si usuario tiene grupos
+    private Response handleCheckUserHasGroup(Request req) {
+        try {
+            Map<String, Object> payload = req.getPayload();
+
+            if (payload == null || !payload.containsKey("idUsuario")) {
+                return new Response(false, "Falta el ID del usuario.");
+            }
+
+            int idUsuario = ((Number) payload.get("idUsuario")).intValue();
+
+            UserDAO userDAO = new UserDAO();
+            boolean hasGroup = userDAO.isUserInAnyGroup(idUsuario);
+
+            Response r = new Response(true, hasGroup ? "Usuario tiene grupos" : "Usuario sin grupos");
+            r.setData(hasGroup);
+            return r;
+
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "error verificando grupos de usuario", e);
+            return new Response(false, "Error al verificar grupos: " + e.getMessage());
         }
     }
 

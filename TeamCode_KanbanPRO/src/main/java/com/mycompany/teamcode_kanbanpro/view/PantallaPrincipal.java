@@ -7,6 +7,7 @@ package com.mycompany.teamcode_kanbanpro.view;
 import javax.swing.JFrame;
 import javax.swing.*;
 import java.awt.*;
+import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
 /**
  *
@@ -16,11 +17,13 @@ public class PantallaPrincipal extends JFrame {
     private JPanel panelCentral;
     private CardLayout cardLayout;
     private ProyectosView panelProyectos;
+    private GrupoView panelGrupos;
+    
     JLabel lblUsuario;
-    //private SprintsView panelSprint;
     private JButton btnInicio;
     private JButton btnProyectos;
-    private JButton btnSprints;
+
+    private JButton btnGrupos;
     private JButton btnSalir;
     
     public void mostrarPanel(String nombrePanel) {
@@ -35,8 +38,9 @@ public class PantallaPrincipal extends JFrame {
         return btnProyectos;
     }
 
-    public JButton getBtnSprints() {
-        return btnSprints;
+
+    public JButton getBtnGrupos() {
+        return btnGrupos;
     }
 
     public JButton getBtnSalir() {
@@ -47,15 +51,18 @@ public class PantallaPrincipal extends JFrame {
         return panelProyectos;
     }
 
+    // === NUEVA INTEGRACIÓN: Getter ===
+    public GrupoView getPanelGrupos() {
+        return panelGrupos;
+    }
+
     public JLabel getLblUsuario() {
         return lblUsuario;
     }
 
     public void setLblUsuario(String lblUsuario) {
-        this.lblUsuario.setText( lblUsuario);
+        this.lblUsuario.setText(lblUsuario);
     }
-    
-    
 
     public PantallaPrincipal() {
         setTitle("KanbanPro");
@@ -66,48 +73,42 @@ public class PantallaPrincipal extends JFrame {
         setVisible(true);
 
         // Barra superior
-        //JPanel barraSuperior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JPanel barraSuperior = new JPanel();
         barraSuperior.setBackground(new Color(25, 118, 210));
-        //barraSuperior.add(new JLabel("Usuario: Ana García"));
         barraSuperior.setLayout(new BorderLayout());
-        barraSuperior.setPreferredSize(new Dimension(0, 50)); // Altura de 50 px
+        barraSuperior.setPreferredSize(new Dimension(0, 50));
         add(barraSuperior, BorderLayout.NORTH);
         
-        //JLabel lblUsuario = new JLabel(nombreUsuario + " (" + rolUsuario + ")", SwingConstants.RIGHT);
         lblUsuario = new JLabel("");
         lblUsuario.setForeground(Color.WHITE);
         lblUsuario.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        lblUsuario.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15)); // margen derecho
+        lblUsuario.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 15));
         barraSuperior.add(lblUsuario, BorderLayout.EAST);
         
-        //JLabel lblTituloApp = new JLabel("Kanban System", SwingConstants.LEFT);
         JLabel lblTituloApp = new JLabel("KanbanPro");
         lblTituloApp.setForeground(Color.WHITE);
         lblTituloApp.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTituloApp.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0)); // margen izquierdo
+        lblTituloApp.setBorder(BorderFactory.createEmptyBorder(0, 15, 0, 0));
         barraSuperior.add(lblTituloApp, BorderLayout.WEST);
 
         // menu lateral
         JPanel menuLateral = new JPanel();
-        menuLateral.setLayout(new GridLayout(5, 1, 0, 10));
-        menuLateral.setBackground(new Color(38, 50, 56)); // Gris oscuro
+
+        menuLateral.setLayout(new GridLayout(6, 1, 0, 10));
+        menuLateral.setBackground(new Color(38, 50, 56));
         menuLateral.setPreferredSize(new Dimension(180, 0));
         menuLateral.setBorder(BorderFactory.createEmptyBorder(80, 20, 80, 20));
 
         btnInicio = crearBotonMenu("Inicio");
         btnProyectos = crearBotonMenu("Proyectos");
+       
+        btnGrupos = crearBotonMenu("Grupos");
         btnSalir = crearBotonMenu("Cerrar Sesión");
-        /*
-        menuLateral.add(btnDashboard);
-        menuLateral.add(btnProyectos);
-        menuLateral.add(btnTareas);
-        menuLateral.add(btnSprints);
-        */
+
         menuLateral.add(btnInicio);
         menuLateral.add(btnProyectos);
-        //menuLateral.add(btnSprints);
-        //menuLateral.add(btnBacklog);
+       
+        menuLateral.add(btnGrupos);
         menuLateral.add(btnSalir);
         
         add(menuLateral, BorderLayout.WEST);
@@ -116,26 +117,27 @@ public class PantallaPrincipal extends JFrame {
         cardLayout = new CardLayout();
         panelCentral = new JPanel(cardLayout);
 
-        // Creamos distintos paneles de contenido
         JPanel panelDashboard = new JPanel();
         panelDashboard.add(new JLabel("Bienvenido al Dashboard"));
 
-        //JPanel panelProyectos = new JPanel();
-        //panelProyectos.add(new JLabel("Gestión de Proyectos"));
         panelProyectos = new ProyectosView();
+        
+        // === NUEVA INTEGRACIÓN: Crear panel de grupos ===
+        panelGrupos = new GrupoView();
+
         JPanel panelTareas = new JPanel();
         panelTareas.add(new JLabel("Gestión de Tareas"));
-        
-       // panelSprint= new SprintsView();
- 
+
         // añadimos los paneles al CardLayout
         panelCentral.add(panelDashboard, "Dashboard");
         panelCentral.add(panelProyectos, "Proyectos");
         panelCentral.add(panelTareas, "Tareas");
-       // panelCentral.add(panelSprint, "Sprints");
+        // === NUEVA INTEGRACIÓN: Registrar panel de grupos ===
+        panelCentral.add(panelGrupos, "Grupos");
 
         add(panelCentral, BorderLayout.CENTER);
-    }   
+    }
+    
     /* metodo auxiliar para crear botones del menu */
     private JButton crearBotonMenu(String texto) {
         JButton btn = new JButton(texto);

@@ -5,8 +5,10 @@ import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.model.Project;
 import com.mycompany.teamcode_kanbanpro.model.Sprint;
+import com.mycompany.teamcode_kanbanpro.model.Group;
 import com.mycompany.teamcode_kanbanpro.view.ProyectosView;
 import com.mycompany.teamcode_kanbanpro.view.CrearSprintView;
+import com.mycompany.teamcode_kanbanpro.view.CrearProyectoView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -30,27 +32,29 @@ public class ProyectosCardController {
     private PermissionManager permission;
     private KanbanBoardController kanbanControllerAbierto = null;
 
-
-    // Variable para almacenar el ID del proyecto actualmente seleccionado
     private int proyectoSeleccionadoId = -1;
     private int sprintSeleccionadoId = -1;
+    
+    // Variable para verificar si usuario tiene grupos 
+    private boolean usuarioTieneGrupos = false;
 
     public ProyectosCardController(ProyectosView view, ClientConnector connector, PermissionManager permission) {
         this.view = view;
         this.connector = connector;
         this.permission = permission;
         initialize();
-        cargarProyectosIniciales();
+        
+        // Verificar grupos antes de cargar proyectos
+        verificarGruposYCargarProyectos();
     }
 
-    //Inicializa todos los listeners y eventos
     private void initialize() {
-        // Obtener referencias a los modelos de las tablas
         modeloProyectos = view.getModeloProyectos();
         modeloSprints = view.getModeloSprints();
 
         configurarPermisos();
 
+        // Listener para selección de proyecto
         view.getTablaProyectos().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -58,14 +62,13 @@ public class ProyectosCardController {
                 int filaSeleccionada = tabla.getSelectedRow();
 
                 if (filaSeleccionada != -1) {
-                    // Obtener el ID del proyecto seleccionado
                     proyectoSeleccionadoId = (Integer) modeloProyectos.getValueAt(filaSeleccionada, 0);
-
-                    // Cargar los sprints de ese proyecto
                     cargarSprintsParaProyecto(proyectoSeleccionadoId);
                 }
             }
         });
+        
+        // Listener para selección de sprint (abre Kanban)
         view.getTablaSprints().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -73,22 +76,18 @@ public class ProyectosCardController {
                 int filaSeleccionada = tabla.getSelectedRow();
 
                 if (filaSeleccionada != -1) {
-
                     sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0);
 
-                    // Si ya existe un Kanban abierto, los traemos al frente
                     if (kanbanControllerAbierto != null && kanbanControllerAbierto.isVisible()) {
                         kanbanControllerAbierto.toFront();
                         return;
                     }
 
-                    // Si no existe o fue cerrado, creamos uno nuevo
                     kanbanControllerAbierto = new KanbanBoardController(
                             connector,
                             sprintSeleccionadoId,
                             proyectoSeleccionadoId);
 
-                    //limpiamos la variable al cerrar la ventana
                     kanbanControllerAbierto.getView().addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override
                         public void windowClosed(java.awt.event.WindowEvent e) {
@@ -98,20 +97,16 @@ public class ProyectosCardController {
                 }
             }
         });
+        
         view.getTablaSprints().getSelectionModel().addListSelectionListener(e -> {
-            // Asegurarse de que el evento no está siendo ajustado (previene disparos
-            // múltiples)
             if (!e.getValueIsAdjusting()) {
                 int filaSeleccionada = view.getTablaSprints().getSelectedRow();
                 if (filaSeleccionada != -1) {
-                    // Usar modeloSprints y solo actualizar la variable de ID
                     sprintSeleccionadoId = (Integer) modeloSprints.getValueAt(filaSeleccionada, 0);
-                    ;
                 }
             }
         });
     }
-
 
     private void configurarPermisos() {
         if (permission.isScrumOrProduct()) {
@@ -122,20 +117,72 @@ public class ProyectosCardController {
             view.getPanelSprints().remove(view.getBtnCrearSprint());
         }
         
-        
         view.getPanelProyectos().revalidate();
         view.getPanelProyectos().repaint();
         view.getPanelSprints().revalidate();
         view.getPanelSprints().repaint();
-
     }
 
-    //Muestra el formulario para crear un nuevo sprint
+    // nuevo: Verificar si el usuario tiene grupos asignados 
+    private void verificarGruposYCargarProyectos() {
+        try {
+            Request req = new Request();
+            req.setAction("getGroupsByUser");
+            
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("idUsuario", connector.getUserID());
+            req.setPayload(payload);
+            
+            Response resp = connector.sendRequest(req);
+            
+            if (resp.isSuccess()) {
+                @SuppressWarnings("unchecked")
+                List<Group> grupos = (List<Group>) resp.getData();
+                
+                if (grupos == null || grupos.isEmpty()) {
+                    usuarioTieneGrupos = false;
+                   mostrarMensajeSinGrupos();
+                } else {
+                    usuarioTieneGrupos = true;
+                    cargarProyectosIniciales();
+                }
+            } else {
+                System.err.println("[ProyectosCardController] Error al verificar grupos: " + resp.getMessage());
+                cargarProyectosIniciales(); // Intentar cargar de todas formas
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            cargarProyectosIniciales();
+        }
+    }
+    
+    // === NUEVA INTEGRACIÓN: Mostrar mensaje cuando usuario no tiene grupos ===
+    private void mostrarMensajeSinGrupos() {
+        modeloProyectos.setRowCount(0);
+        modeloSprints.setRowCount(0);
+        
+        // Deshabilitar botones de creación
+        view.getBtnCrearProyecto().setEnabled(false);
+        view.getBtnCrearSprint().setEnabled(false);
+        
+        JOptionPane.showMessageDialog(view,
+                "No perteneces a ningún grupo de trabajo.\n\n" +
+                "Para ver y crear proyectos, debes ser miembro de al menos un grupo.\n" +
+                "Contacta al Scrum Master o administrador para ser asignado.",
+                "Sin grupos asignados",
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
     private void mostrarFormularioCrearSprint() {
-
-       
-
-        //Verificar que hay un proyecto seleccionado
+        // Verificar grupos antes de crear sprint
+        if (!usuarioTieneGrupos) {
+            JOptionPane.showMessageDialog(view,
+                    "No puedes crear sprints porque no perteneces a ningún grupo.",
+                    "Sin permisos",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
         int filaSeleccionada = view.getTablaProyectos().getSelectedRow();
 
         if (filaSeleccionada == -1 || proyectoSeleccionadoId == -1) {
@@ -147,10 +194,8 @@ public class ProyectosCardController {
             return;
         }
 
-        //Obtener el nombre del proyecto para mostrar en el formulario (opcional)
         String nombreProyecto = (String) modeloProyectos.getValueAt(filaSeleccionada, 1);
 
-        //Crear la vista del formulario
         CrearSprintView formulario = new CrearSprintView();
         formulario.setTitle("Crear Sprint para: " + nombreProyecto);
 
@@ -159,7 +204,6 @@ public class ProyectosCardController {
                 connector,
                 proyectoSeleccionadoId,
                 () -> {
-                    // Este código se ejecuta después de crear el sprint
                     System.out.println("Sprint creado, refrescando tabla...");
                     cargarSprintsParaProyecto(proyectoSeleccionadoId);
                 }
@@ -168,10 +212,8 @@ public class ProyectosCardController {
         formulario.setVisible(true);
     }
 
-    //Carga los sprints de un proyecto específico desde el servidor
     private void cargarSprintsParaProyecto(int projectID) {
         try {
-
             Request req = new Request();
             req.setAction("getSprintsByProject");
 
@@ -179,20 +221,16 @@ public class ProyectosCardController {
             payload.put("projectId", projectID);
             req.setPayload(payload);
 
-            // Enviar al servidor
             Response resp = connector.sendRequest(req);
 
             if (resp.isSuccess()) {
                 @SuppressWarnings("unchecked")
                 List<Sprint> listSprints = (List<Sprint>) resp.getData();
                 actualizarTablaSprints(listSprints);
-
-                //System.out.println("Sprints cargados: " + (listSprints != null ? listSprints.size() : 0));
             } else {
                 JOptionPane.showMessageDialog(view,
                         "Error al cargar sprints: " + resp.getMessage(),
                         "Error", JOptionPane.ERROR_MESSAGE);
-
                 modeloSprints.setRowCount(0);
             }
         } catch (Exception e) {
@@ -203,20 +241,23 @@ public class ProyectosCardController {
         }
     }
 
-    //Muestra el formulario para crear un nuevo proyecto
     private void crearNuevoProyecto() {
+        //Verificar grupos antes de crear proyecto 
+        if (!usuarioTieneGrupos) {
+            JOptionPane.showMessageDialog(view,
+                    "No puedes crear proyectos porque no perteneces a ningún grupo.\n\n" +
+                    "Contacta al administrador para ser asignado a un grupo.",
+                    "Sin permisos",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        CrearProyectoView formulario = new CrearProyectoView();
 
-
-        // Crear la vista del formulario
-        com.mycompany.teamcode_kanbanpro.view.CrearProyectoView formulario
-                = new com.mycompany.teamcode_kanbanpro.view.CrearProyectoView();
-
-        // Crear el controlador con callback para refrescar
         new ProyectoController(
                 formulario,
                 connector,
                 () -> {
-
                     System.out.println("Proyecto creado, refrescando tabla...");
                     cargarProyectosIniciales();
                 }
@@ -225,7 +266,6 @@ public class ProyectosCardController {
         formulario.setVisible(true);
     }
 
-    //Carga los proyectos del usuario actual desde el servidor 
     public void cargarProyectosIniciales() {
         try {
             Request req = new Request();
@@ -242,15 +282,25 @@ public class ProyectosCardController {
                 List<Project> listProjects = (List<Project>) resp.getData();
                 actualizarTablaProyectos(listProjects);
 
-                // Limpiar la tabla de sprints al cargar proyectos
                 modeloSprints.setRowCount(0);
                 proyectoSeleccionadoId = -1;
 
                 System.out.println("Proyectos cargados: " + (listProjects != null ? listProjects.size() : 0));
+                
+                // Habilitar botones si hay proyectos 
+                if (listProjects != null && !listProjects.isEmpty()) {
+                    view.getBtnCrearSprint().setEnabled(permission.isScrumOrProduct());
+                }
             } else {
-                JOptionPane.showMessageDialog(view,
-                        "Error al cargar proyectos: " + resp.getMessage(),
-                        "Error", JOptionPane.ERROR_MESSAGE);
+                // Manejar caso sin grupos 
+                if (resp.getMessage().contains("no pertenece a ningún grupo")) {
+                    usuarioTieneGrupos = false;
+                 mostrarMensajeSinGrupos();
+                } else {
+                    JOptionPane.showMessageDialog(view,
+                            "Error al cargar proyectos: " + resp.getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -260,18 +310,14 @@ public class ProyectosCardController {
         }
     }
 
-    //Actualiza la tabla de proyectos con los datos recibidos
     private void actualizarTablaProyectos(List<Project> proyectos) {
-        // Limpiar la tabla
         modeloProyectos.setRowCount(0);
 
         if (proyectos == null || proyectos.isEmpty()) {
-            // Mostrar mensaje si no hay proyectos
             System.out.println("No se encontraron proyectos para este usuario");
             return;
         }
 
-        // Agregar cada proyecto a la tabla
         for (Project p : proyectos) {
             Object[] fila = new Object[5];
             fila[0] = p.getIdProyecto();
@@ -285,7 +331,6 @@ public class ProyectosCardController {
     }
 
     private void actualizarTablaSprints(List<Sprint> sprints) {
-
         modeloSprints.setRowCount(0);
 
         if (sprints == null || sprints.isEmpty()) {
@@ -293,8 +338,6 @@ public class ProyectosCardController {
             return;
         }
 
-        // Agregar cada sprint a la tabla
-        // CORREGIDO: Ahora coincide con las 5 columnas de la vista
         for (Sprint s : sprints) {
             Object[] fila = new Object[5];
             fila[0] = s.getIdSprint();
@@ -304,13 +347,19 @@ public class ProyectosCardController {
             fila[4] = s.getFechaFin() != null ? s.getFechaFin().toString() : "";
 
             modeloSprints.addRow(fila);
-           
         }
+        
         view.getTablaSprints().clearSelection();
-    sprintSeleccionadoId = -1;
+        sprintSeleccionadoId = -1;
     }
 
     public int getProyectoSeleccionadoId() {
         return proyectoSeleccionadoId;
     }
+    
+    //Getter para verificar estado de grupos 
+    public boolean isUsuarioTieneGrupos() {
+        return usuarioTieneGrupos;
+    }
 }
+

@@ -7,6 +7,7 @@ package com.mycompany.teamcode_kanbanpro.server.handler;
 import com.mycompany.teamcode_kanbanpro.client.Request;
 import com.mycompany.teamcode_kanbanpro.client.Response;
 import com.mycompany.teamcode_kanbanpro.dao.ProjectDAO;
+import com.mycompany.teamcode_kanbanpro.dao.ColumnDAO;
 import com.mycompany.teamcode_kanbanpro.dao.GroupDAO;
 import com.mycompany.teamcode_kanbanpro.dao.UserDAO;
 import com.mycompany.teamcode_kanbanpro.model.Project;
@@ -21,8 +22,9 @@ import java.util.Map;
 public class ProjectServerHandler {
     
     private final ProjectDAO projectDAO;
-    private  GroupDAO groupDAO;
+    private GroupDAO groupDAO;
     private final UserDAO userDAO;
+    private ColumnDAO columnDAO;
 
     public ProjectServerHandler(ProjectDAO projectDAO, UserDAO userDAO) {
         this.projectDAO = projectDAO;
@@ -36,24 +38,26 @@ public class ProjectServerHandler {
     }
 
     
+    //Obtiene los proyectos accesibles para un usuario. 
     public Response handleGetProjectsByUser(int userId) {
         try {
             System.out.println("[ProjectHandler] Obteniendo proyectos para usuario ID: " + userId);
             
-            
-            // Validar si el usuario esta en un grupo
+            // Validar si el usuario está en algún grupo
             boolean userHasGroups = userDAO.isUserInAnyGroup(userId);
             
             if (!userHasGroups) {
                 System.out.println("[ProjectHandler] Usuario no pertenece a ningún grupo");
-                return new Response(false, """
-                                           El usuario no pertenece a ning\u00fan grupo.
-                                           Contacte al administrador para ser asignado a un grupo.""");
+                Response r = new Response(true, "Usuario sin grupos asignados.");
+                r.setData(new java.util.ArrayList<Project>()); // Lista vacía
+                return r;
             }
     
+            // Obtener proyectos con información de grupos
             List<Project> projects = projectDAO.selectProjectsByUserIdWithGroups(userId);
             
-            System.out.println("[ProjectHandler] Proyectos encontrados: " + (projects != null ? projects.size() : 0));
+            System.out.println("[ProjectHandler] Proyectos encontrados: " + 
+                             (projects != null ? projects.size() : 0));
 
             Response r = new Response(true, "Proyectos cargados exitosamente.");
             r.setData(projects);
@@ -64,10 +68,8 @@ public class ProjectServerHandler {
             return new Response(false, "Error interno al cargar proyectos: " + ex.getMessage());
         }
     }
-    
-    
-     //Crea un nuevo proyecto con sus grupos asignados
-     
+  
+    //Crea un nuevo proyecto y lo asigna a un grupo.
     public Response handleCreateProject(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
@@ -78,17 +80,15 @@ public class ProjectServerHandler {
             String nombre = (String) p.get("nombre");
             String descripcion = (String) p.get("descripcion");
             Integer creadorId = (Integer) p.get("creadorId");
-            
-            //@SuppressWarnings("unchecked")
-          //  List<Integer> gruposIds = (List<Integer>) p.get("gruposIds");
+            // === NUEVA INTEGRACIÓN: Obtener ID del grupo ===
+            Integer grupoId = (Integer) p.get("grupoId");
             
             System.out.println("[ProjectHandler] Datos recibidos:");
             System.out.println("  - Nombre: " + nombre);
             System.out.println("  - Creador ID: " + creadorId);
-           // System.out.println("  - Grupos IDs: " + gruposIds);
+            System.out.println("  - Grupo ID: " + grupoId);
             
             // VALIDACIONES
-            
             if (nombre == null || nombre.trim().isEmpty()) {
                 return new Response(false, "El nombre del proyecto es obligatorio");
             }
@@ -106,13 +106,26 @@ public class ProjectServerHandler {
             if (creadorId == null || creadorId <= 0) {
                 return new Response(false, "ID de creador inválido");
             }
-            /*
-            if (gruposIds == null || gruposIds.isEmpty()) {
-                return new Response(false, "Debe asignar al menos un grupo al proyecto");
+            
+            //Validar grupo obligatorio
+            if (grupoId == null || grupoId <= 0) {
+                return new Response(false, "Debe seleccionar un grupo para el proyecto");
             }
-            */
+            
+            //Verificar que el grupo existe
+            Group grupo = groupDAO.selectGroupById(grupoId);
+            if (grupo == null) {
+                return new Response(false, "El grupo seleccionado no existe");
+            }
+            
+            //Verificar que el usuario pertenece al grupo
+            if (!groupDAO.isUserInGroup(creadorId, grupoId)) {
+                return new Response(false, 
+                    "No tienes permisos para crear proyectos en el grupo '" + grupo.getNombre() + "'.\n" +
+                    "Debes ser miembro del grupo.");
+            }
+            
             // Verificar que el nombre no esté duplicado
-            // (La BD tiene UNIQUE pero es mejor validar antes)
             List<Project> existentes = projectDAO.selectAllProjects();
             for (Project proj : existentes) {
                 if (proj.getNombre().equalsIgnoreCase(nombre)) {
@@ -136,37 +149,31 @@ public class ProjectServerHandler {
             }
             
             System.out.println("[ProjectHandler] Proyecto creado con ID: " + projectId);
-            /*
-            // ASIGNAR GRUPOS AL PROYECTO
-            System.out.println("[ProjectHandler] Asignando grupos al proyecto...");
             
-            int gruposAsignados = 0;
-            for (Integer grupoId : gruposIds) {
-                boolean asignado = groupDAO.assignGroupToProject(projectId, grupoId);
-                if (asignado) {
-                    gruposAsignados++;
-                    System.out.println("  - Grupo " + grupoId + " asignado correctamente");
-                } else {
-                    System.err.println("  - Error al asignar grupo " + grupoId);
-                }
-            }
+            //Asignar proyecto al grupo
+            System.out.println("[ProjectHandler] Asignando proyecto al grupo " + grupoId + "...");
             
-            if (gruposAsignados == 0) {
-                // Si no se pudo asignar ningún grupo, eliminar el proyecto creado
+            boolean asignado = groupDAO.assignGroupToProject(projectId, grupoId);
+            
+            if (!asignado) {
+                // Si falla la asignación, eliminar el proyecto creado
+                System.err.println("[ProjectHandler] Error al asignar grupo, eliminando proyecto...");
                 projectDAO.deleteProject(projectId);
                 return new Response(false, 
-                    "Error al asignar grupos al proyecto. El proyecto no fue creado.");
+                    "Error al asignar el proyecto al grupo. El proyecto no fue creado.");
             }
-            */
-            // CREAR COLUMNAS KANBAN POR DEFECTO
+            
+            System.out.println("[ProjectHandler] Proyecto asignado al grupo '" + grupo.getNombre() + "'");
+            
+            // Crear columnas Kanban por defecto
             crearColumnasKanbanPorDefecto(projectId);
             
             // PREPARAR RESPUESTA 
             newProject.setIdProyecto(projectId);
+            newProject.setGruposPertenencia(grupo.getNombre());
             
             Response r = new Response(true, 
-                "Proyecto '" + nombre + "' creado exitosamente con ");
-            //+  gruposAsignados + " grupo(s) asignado(s)");
+                "Proyecto '" + nombre + "' creado exitosamente en el grupo '" + grupo.getNombre() + "'");
             r.setData(newProject);
             
             System.out.println("[ProjectHandler] Proyecto creado exitosamente!");
@@ -183,33 +190,33 @@ public class ProjectServerHandler {
         }
     }
     
-    
-     //Crea las columnas Kanban por defecto para un proyecto nuevo
+    /**
+     * Crea las columnas Kanban por defecto para un proyecto nuevo
+     */
     private void crearColumnasKanbanPorDefecto(int projectId) {
         try {
-            // Usar ColumnDAO si existe, o ejecutar SQL directo
-            // Por ahora, las columnas se crean con SQL directo a través del DAO
-            
+            // Nota: Necesitarías un ColumnaKanbanDAO para esto
+            // Por ahora solo logueamos
             String[][] columnasDefault = {
                 {"Backlog", "1", "#9E9E9E"},
                 {"To Do", "2", "#2196F3"},
                 {"In Progress", "3", "#FF9800"},
                 {"Done", "4", "#4CAF50"}
             };
+
+
             
-            // Nota: Necesitarías un ColumnaKanbanDAO para esto
-            // Por ahora solo logueamos que se necesitan crear
             System.out.println("[ProjectHandler] Se deben crear columnas Kanban para proyecto " + projectId);
             System.out.println("  (Implementar ColumnaKanbanDAO para crear automáticamente)");
             
         } catch (Exception e) {
             System.err.println("[ProjectHandler] Error al crear columnas: " + e.getMessage());
-            // No es crítico, el proyecto ya fue creado
         }
     }
     
-    
-    //Actualiza un proyecto existente
+    /**
+     * Actualiza un proyecto existente
+     */
     public Response handleUpdateProject(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
@@ -218,18 +225,15 @@ public class ProjectServerHandler {
             String nombre = (String) p.get("nombre");
             String descripcion = (String) p.get("descripcion");
             
-            // Validaciones
             if (nombre == null || nombre.trim().isEmpty()) {
                 return new Response(false, "El nombre es obligatorio");
             }
             
-            // Obtener proyecto existente
             Project project = projectDAO.selectProjectById(projectId);
             if (project == null) {
                 return new Response(false, "Proyecto no encontrado");
             }
             
-            // Actualizar campos
             project.setNombre(nombre.trim());
             project.setDescripcion(descripcion != null ? descripcion.trim() : "");
             
@@ -247,11 +251,11 @@ public class ProjectServerHandler {
         }
     }
     
-    
-    //Elimina un proyecto
+    /**
+     * Elimina un proyecto
+     */
     public Response handleDeleteProject(int projectId) {
         try {
-            // Verificar que existe
             Project project = projectDAO.selectProjectById(projectId);
             if (project == null) {
                 return new Response(false, "Proyecto no encontrado");
@@ -270,4 +274,5 @@ public class ProjectServerHandler {
             return new Response(false, "Error al eliminar proyecto: " + e.getMessage());
         }
     }
+
 }

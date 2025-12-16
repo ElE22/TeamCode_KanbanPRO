@@ -23,7 +23,7 @@ public class ProyectoController {
 
     private CrearProyectoView view;
     private ClientConnector connector;
-    private Runnable onProyectoCreado; // Callback para notificar creación exitosa
+    private Runnable onProyectoCreado;
 
     public ProyectoController(CrearProyectoView view, ClientConnector connector,
             Runnable onProyectoCreado) {
@@ -31,18 +31,16 @@ public class ProyectoController {
         this.connector = connector;
         this.onProyectoCreado = onProyectoCreado;
         
-        // Configurar la ventana
         configurarVentana();
-
-        // Cargar grupos disponibles
-        // cargarGruposDisponibles();
-        // Adjuntar listeners
+        
+        // === NUEVA INTEGRACIÓN: Cargar grupos del usuario ===
+        cargarGruposDelUsuario();
+        
         attachListeners();
         this.view.setIconImage(ImageLoader.loadImage());
     }
 
     private void configurarVentana() {
-       
         // Cerrar con ESC
         view.getRootPane().registerKeyboardAction(
                 e -> view.dispose(),
@@ -51,37 +49,52 @@ public class ProyectoController {
         );
     }
 
-    //Carga los grupos disponibles desde el servidor
-    /*
-    private void cargarGruposDisponibles() {
+    // === NUEVA INTEGRACIÓN: Método completo para cargar grupos del usuario ===
+    /**
+     * Carga los grupos a los que pertenece el usuario actual.
+     * Solo estos grupos estarán disponibles para asignar al proyecto.
+     */
+    private void cargarGruposDelUsuario() {
         try {
             Request req = new Request();
-            req.setAction("getAllGroups");
+            req.setAction("getGroupsByUser");
+            
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("idUsuario", connector.getUserID());
+            req.setPayload(payload);
             
             Response resp = connector.sendRequest(req);
             
             if (resp.isSuccess()) {
                 @SuppressWarnings("unchecked")
                 List<Group> grupos = (List<Group>) resp.getData();
-                view.cargarGruposDisponibles(grupos);
-                System.out.println("[ProyectoController] Grupos cargados: " + 
-                                 (grupos != null ? grupos.size() : 0));
+                
+                if (grupos == null || grupos.isEmpty()) {
+                    // Usuario no pertenece a ningún grupo
+                    mostrarError("No perteneces a ningún grupo.\n\n" +
+                                "Debes ser miembro de al menos un grupo para crear proyectos.\n" +
+                                "Contacta al administrador para ser asignado a un grupo.");
+                    view.getBtnGuardar().setEnabled(true);
+                    view.dispose();
+                    return;
+                }
+                
+                view.cargarGrupos(grupos);
+                System.out.println("[ProyectoController] Grupos del usuario cargados: " + grupos.size());
             } else {
                 mostrarError("Error al cargar grupos: " + resp.getMessage());
+                view.getBtnGuardar().setEnabled(false);
             }
         } catch (Exception e) {
             e.printStackTrace();
             mostrarError("Error de comunicación al cargar grupos:\n" + e.getMessage());
+            view.getBtnGuardar().setEnabled(false);
         }
     }
-    
-     */
-    //Adjunta los listeners a los componentes de la vista
+
     private void attachListeners() {
-        // Botón Guardar
         view.getBtnGuardar().addActionListener(e -> crearProyecto());
 
-        // Botón Cancelar
         view.getBtnCancelar().addActionListener(e -> {
             view.limpiarCampos();
             view.dispose();
@@ -89,13 +102,14 @@ public class ProyectoController {
     }
 
     private void crearProyecto() {
-        //OBTENER DATOS
+        // OBTENER DATOS
         String nombre = view.getTxtNombre().getText().trim();
         String descripcion = view.getTxtDescripcion().getText().trim();
-        // List<Integer> gruposIds = view.getGruposAsignadosIds();
+        
+        // === NUEVA INTEGRACIÓN: Obtener grupo seleccionado ===
+        int grupoId = view.getGrupoSeleccionadoId();
 
-        // VALIDACIONE
-        // Validar nombre
+        // VALIDACIONES
         if (nombre.isEmpty()) {
             mostrarError("El nombre del proyecto es obligatorio.");
             view.getTxtNombre().requestFocus();
@@ -113,34 +127,21 @@ public class ProyectoController {
             view.getTxtNombre().requestFocus();
             return;
         }
-        /*
-        // Validar grupos asignados
-        if (gruposIds.isEmpty()) {
-            mostrarError("Debe asignar al menos un grupo al proyecto.\n\n" +
-                        "Seleccione grupos de la lista izquierda y use el botón '>>' " +
-                        "para agregarlos.");
+
+        // === NUEVA INTEGRACIÓN: Validar grupo seleccionado ===
+        if (!view.tieneGrupoSeleccionado() || grupoId <= 0) {
+            mostrarError("Debe seleccionar un grupo para el proyecto.\n\n" +
+                        "El proyecto será visible para todos los miembros del grupo seleccionado.");
+            view.getCmbGrupos().requestFocus();
             return;
         }
-        
-        //CONFIRMAR CREACIÓN
-        int confirmacion = JOptionPane.showConfirmDialog(view,
-            "¿Desea crear el proyecto '" + nombre + "' con " + 
-            gruposIds.size() + " grupo(s) asignado(s)?",
-            "Confirmar creación",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE);
-        
-        if (confirmacion != JOptionPane.YES_OPTION) {
-            return;
-        }
-         */
+
         // DESHABILITAR BOTONES 
         view.getBtnGuardar().setEnabled(false);
         view.getBtnGuardar().setText("Creando...");
         view.getBtnCancelar().setEnabled(false);
 
         try {
-            //CREAR REQUEST 
             Request req = new Request();
             req.setAction("createProject");
 
@@ -148,30 +149,29 @@ public class ProyectoController {
             payload.put("nombre", nombre);
             payload.put("descripcion", descripcion);
             payload.put("creadorId", connector.getUserID());
-            // payload.put("gruposIds", gruposIds);
+            // === NUEVA INTEGRACIÓN: Enviar ID del grupo ===
+            payload.put("grupoId", grupoId);
             req.setPayload(payload);
 
             System.out.println("[ProyectoController] Enviando solicitud de creación...");
             System.out.println("  - Nombre: " + nombre);
             System.out.println("  - Creador ID: " + connector.getUserID());
-            // System.out.println("  - Grupos: " + gruposIds);
+            System.out.println("  - Grupo ID: " + grupoId);
 
-            //ENVIAR AL SERVIDOR
             Response resp = connector.sendRequest(req);
 
-            //PROCESAR RESPUESTA
             if (resp.isSuccess()) {
                 System.out.println("[ProyectoController] Proyecto creado exitosamente!");
 
                 JOptionPane.showMessageDialog(view,
-                        "Proyecto '" + nombre + "' creado exitosamente.",
+                        "Proyecto '" + nombre + "' creado exitosamente.\n" +
+                        "El proyecto ha sido asignado al grupo seleccionado.",
                         "Éxito",
                         JOptionPane.INFORMATION_MESSAGE);
 
                 view.limpiarCampos();
                 view.dispose();
 
-                // Ejecutar callback para refrescar la tabla
                 if (onProyectoCreado != null) {
                     onProyectoCreado.run();
                 }
@@ -188,14 +188,12 @@ public class ProyectoController {
         }
     }
 
-    //Rehabilita los botones después de un error
     private void rehabilitarBotones() {
         view.getBtnGuardar().setEnabled(true);
         view.getBtnGuardar().setText("Crear Proyecto");
         view.getBtnCancelar().setEnabled(true);
     }
 
-    //Muestra un mensaje de error
     private void mostrarError(String mensaje) {
         JOptionPane.showMessageDialog(view,
                 mensaje,
