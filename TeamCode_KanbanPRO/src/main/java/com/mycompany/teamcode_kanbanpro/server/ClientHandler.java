@@ -54,7 +54,7 @@ public class ClientHandler implements Runnable {
         this.projectHandler = new ProjectServerHandler(projectDAO, userDAO);
         this.sprintHandler = new SprintServerHandler(sprintDAO);
         this.columnHandler = new ColumnServerHandler(columnDAO);
-        this.taskHandler = new TaskServerHandler(taskDAO, priorityDAO);
+        this.taskHandler = new TaskServerHandler(taskDAO, priorityDAO, sprintDAO);
         this.priorityHandler = new PriorityServerHandler(priorityDAO);
         this.grupoHandler = new GrupoServerHandler(groupDAO, userDAO);
     }

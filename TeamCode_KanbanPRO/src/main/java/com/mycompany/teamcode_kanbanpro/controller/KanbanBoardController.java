@@ -339,8 +339,6 @@ public class KanbanBoardController {
 
                     if (createdTaskFromServer != null) {
                         // Crear el panel visual de la tarea
-                        System.out.println("Tarea creada con ID: " + createdTaskFromServer.getIdTarea() + " nombre"
-                                + createdTaskFromServer.getNombrePrioridad());
                         KanbanTaskPanel taskPanel = new KanbanTaskPanel(createdTaskFromServer, view);
 
                         // Encontrar la columna destino y agregar la tarea
