@@ -32,7 +32,6 @@ public class ProyectoController {
         
         configurarVentana();
         
-        // === NUEVA INTEGRACIÓN: Cargar grupos del usuario ===
         cargarGruposDelUsuario();
         
         attachListeners();
@@ -96,7 +95,6 @@ public class ProyectoController {
         String nombre = view.getTxtNombre().getText().trim();
         String descripcion = view.getTxtDescripcion().getText().trim();
         
-        // === NUEVA INTEGRACIÓN: Obtener grupo seleccionado ===
         int grupoId = view.getGrupoSeleccionadoId();
 
         // VALIDACIONES
@@ -118,7 +116,6 @@ public class ProyectoController {
             return;
         }
 
-        // === NUEVA INTEGRACIÓN: Validar grupo seleccionado ===
         if (!view.tieneGrupoSeleccionado() || grupoId <= 0) {
             mostrarError("Debe seleccionar un grupo para el proyecto.\n\n" +
                         "El proyecto será visible para todos los miembros del grupo seleccionado.");

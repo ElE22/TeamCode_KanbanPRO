@@ -198,9 +198,6 @@ public class ProjectServerHandler {
         }
     }
     
-    /**
-     * Crea las columnas Kanban por defecto para un proyecto nuevo
-     */
     private boolean crearColumnasKanbanPorDefecto(int projectId) {
         try {
             String[][] columnasDefault = {
@@ -228,9 +225,6 @@ public class ProjectServerHandler {
         }
     }
     
-    /**
-     * Actualiza un proyecto existente
-     */
     public Response handleUpdateProject(Request req) {
         try {
             Map<String, Object> p = req.getPayload();
@@ -264,10 +258,7 @@ public class ProjectServerHandler {
             return new Response(false, "Error al actualizar proyecto: " + e.getMessage());
         }
     }
-    
-    /**
-     * Elimina un proyecto
-     */
+
     public Response handleDeleteProject(int projectId) {
         try {
             Project project = projectDAO.selectProjectById(projectId);

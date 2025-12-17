@@ -94,7 +94,7 @@ public class ProyectosCardController {
                             connector,
                             sprintSeleccionadoId,
                             proyectoSeleccionadoId, proyectoSeleccionadoNombre,
-                            sprintSeleccionadoNombre);
+                            sprintSeleccionadoNombre, permission);
 
                     kanbanControllerAbierto.getView().addWindowListener(new java.awt.event.WindowAdapter() {
                         @Override

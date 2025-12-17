@@ -32,7 +32,6 @@ public class KanbanTaskPanel extends JPanel {
         setLayout(new BorderLayout(8, 8));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
         setPreferredSize(new Dimension(250, 122));
-        System.out.println("Configurando borde para tarea: " + this.taskData.getNombrePrioridad());
         setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(getPriorityColor(this.taskData.getNombrePrioridad()), 3),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
@@ -132,9 +131,9 @@ public class KanbanTaskPanel extends JPanel {
 
     private Color getPriorityColor(String priority) {
         return switch (priority.toUpperCase()) {
-            case "ALTA" -> new Color(255, 64, 129);   // Rojo/Rosa
-            case "MEDIA" -> new Color(255, 179, 0);   // Naranja/Amarillo
-            case "BAJA" -> new Color(30, 136, 229);   // Azul
+            case "ALTA" -> Color.decode("#FF4081");   // Rojo/Rosa
+            case "MEDIA" -> Color.decode("#FFB300");   // Naranja/Amarillo
+            case "BAJA" -> Color.decode("#1E88E5");   // Azul
             default -> Color.LIGHT_GRAY;
         };
     }

@@ -32,14 +32,16 @@ public class KanbanBoardController {
     private final int currentProjectId; 
     private final String currentProjectName;
     private final String currentSprintName;
+    private PermissionManager permission;
 
-    public KanbanBoardController( ClientConnector connector, int sprintId, int pId, String pNombre, String sNombre) {
+    public KanbanBoardController( ClientConnector connector, int sprintId, int pId, String pNombre, String sNombre, PermissionManager permission) {
         this.view = new KanbanBoardView();
         this.connector = connector;
         this.currentSprintId = sprintId;
         this.currentProjectId = pId;
         this.currentProjectName = pNombre;
         this.currentSprintName = sNombre;
+        this.permission = permission;
         view.setController(this);
         
         this.connector.setKanbanController(this);
@@ -47,7 +49,7 @@ public class KanbanBoardController {
         attachListeners();
         this.view.setIconImage(ImageLoader.loadImage());
         view.setTitle("Pizarra Kanban - Proyecto: " + currentProjectName + " | Sprint: " + currentSprintName);
-        view.setTitleLabel("Proyecto (" + currentProjectName + ") | Sprint (" + currentSprintName + ")");
+        view.setTitleLabel("Proyecto (" + currentProjectName + ") | Sprint (" + currentSprintName + ")  [Usuario: " + connector.getUserName() + "]");
         this.view.setVisible(true);
     }
     
@@ -57,15 +59,14 @@ public class KanbanBoardController {
     }
     
     private void attachListeners() {
-        
-        view.getCreateTaskButton().addActionListener(e -> handleNewTask());
+        if(permission.isScrumOrProduct()){
+             view.getCreateTaskButton().addActionListener(e -> handleNewTask());
+        } else {
+            view.getTopPanel().remove(view.getCreateTaskButton());
+            view.getTopPanel().revalidate();
+            view.getTopPanel().repaint();
+        }
     }
-    
-    
-//    private void handleNewTask(){
-//       
-//        JOptionPane.showMessageDialog(view, "Funcionalidad de crear tarea aquí");
-//    }
     
     private void loadColumns() {
         try {
@@ -220,9 +221,6 @@ public class KanbanBoardController {
 
             int taskId = taskData.getIdTarea();
             int newColumnId = taskData.getIdColumna();
-
-
-            
 
             //System.out.println("Broadcast recibido: tarea " + taskId + " movida a columna " + newColumnId);
 
@@ -442,7 +440,7 @@ public class KanbanBoardController {
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
-}
+    }
 
     public boolean isVisible() {
         return view.isVisible();

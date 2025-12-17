@@ -35,6 +35,7 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
     private final Map<String, KanbanColumnPanel> columnsMap = new HashMap<>();
     private JPanel boardPanel;
     private JLabel titleLabel; 
+    private JPanel topPanel;
     
     public KanbanBoardView() {
         initializeFrame();
@@ -51,7 +52,7 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
         JPanel mainPanel = new JPanel(new BorderLayout());
         
         // Panel superior con titulo y boton
-        JPanel topPanel = new JPanel(new BorderLayout());
+        topPanel = new JPanel(new BorderLayout());
         topPanel.setBackground(new Color(41, 128, 185));
         topPanel.setBorder(new EmptyBorder(15, 20, 15, 20));
         
@@ -204,6 +205,10 @@ public class KanbanBoardView extends JFrame implements DragGestureListener, Drag
 
     public void setTitleLabel(String title) {
         this.titleLabel.setText(title);
+    }
+
+    public JPanel getTopPanel() {
+        return topPanel;
     }
 
 }
