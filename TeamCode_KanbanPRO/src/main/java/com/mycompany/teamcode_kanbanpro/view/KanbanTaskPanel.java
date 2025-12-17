@@ -7,6 +7,9 @@ package com.mycompany.teamcode_kanbanpro.view;
 import com.mycompany.teamcode_kanbanpro.model.Task;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import java.awt.event.*;
+
 import java.awt.*;
 import java.awt.dnd.DnDConstants;
 import java.awt.dnd.DragSource;
@@ -18,6 +21,7 @@ import java.awt.dnd.DragSource;
 public class KanbanTaskPanel extends JPanel {
     private final Task taskData;
     private final KanbanBoardView parentView;
+    private JTextArea descArea;
 
     public KanbanTaskPanel(Task tData, KanbanBoardView parentView) {
         this.taskData = tData;
@@ -36,7 +40,6 @@ public class KanbanTaskPanel extends JPanel {
             BorderFactory.createLineBorder(getPriorityColor(this.taskData.getNombrePrioridad()), 3),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
-        
         setBackground(new Color(248, 249, 250));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     }
@@ -49,7 +52,7 @@ public class KanbanTaskPanel extends JPanel {
         add(titleLabel, BorderLayout.NORTH);
 
         // Descripcion en el centro
-        JTextArea descArea = createDescriptionArea();
+        createDescriptionArea();
         add(descArea, BorderLayout.CENTER);
 
         // Panel inferior con prioridad y grupos
@@ -58,7 +61,7 @@ public class KanbanTaskPanel extends JPanel {
     }
 
     private JTextArea createDescriptionArea() {
-        JTextArea descArea = new JTextArea(this.taskData.getDescripcion());
+        descArea = new JTextArea(this.taskData.getDescripcion());
         descArea.setFont(new Font("Arial", Font.PLAIN, 11));
         descArea.setForeground(new Color(90, 90, 90));
         descArea.setLineWrap(true);
@@ -67,10 +70,9 @@ public class KanbanTaskPanel extends JPanel {
         descArea.setOpaque(false);
         descArea.setFocusable(false);
         descArea.setBorder(new EmptyBorder(2, 0, 2, 0));
-        
-        // Registrar drag & drop también en el JTextArea
+        descArea.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
         registerDragGesture(descArea);
-        
         return descArea;
     }
 
@@ -153,5 +155,9 @@ public class KanbanTaskPanel extends JPanel {
             return (KanbanColumnPanel) parent;
         }
         return null;
+    }
+
+    public JTextArea getDescArea() {
+        return descArea;
     }
 }

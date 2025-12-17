@@ -28,14 +28,14 @@ public class Task  implements Serializable{
     private Date fechaVencimiento;
     private Timestamp fechaModificacion;
     private int creadoPor;
-    private Integer idTareaPadre; // integer para permitir null (subtarea)
+    private Integer idTareaPadre; 
 
     // atributos extra para joins y relaciones
     private String nombreProyecto;
     private String nombreSprint;
     private String nombreColumna;
     private String nombrePrioridad;
-    private String nombreCreador; // nombre del usuario que creo la tarea
+    private String nombreCreador; 
     private String tituloTareaPadre;
     
     // para relaciones n:m (asignacion de usuarios) y recursiva (subtareas)

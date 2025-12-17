@@ -5,6 +5,7 @@
 package com.mycompany.teamcode_kanbanpro.dao;
 
 import com.mycompany.teamcode_kanbanpro.model.Task;
+import com.mycompany.teamcode_kanbanpro.model.User;
 import com.mycompany.teamcode_kanbanpro.util.DBUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -115,6 +116,10 @@ public class TaskDAO {
     private static final String DELETE_TASK = "DELETE FROM tarea WHERE id_tarea = ?";
     
     private static final String SELECT_TASKS_BY_SPRINT_WITH_GROUPS = BASE_SELECT_WITH_GROUPS + "ORDER BY t.id_tarea";
+    private static final String SELECT_USERS_BY_TASK = 
+    "SELECT u.id_usuario, u.nombre, u.correo FROM usuario u " +
+    "JOIN usuario_tarea ut ON u.id_usuario = ut.id_usuario " +
+    "WHERE ut.id_tarea = ?";
 
     // consultas de asignacion (usuario_tarea)
     private static final String ASSIGN_USER_TO_TASK = "INSERT INTO usuario_tarea (id_usuario, id_tarea) VALUES (?, ?)";
@@ -355,24 +360,68 @@ public class TaskDAO {
     }
 
     public Task updateTaskColumn(int taskId, int newColumnId) throws Exception {
-    
-    try (Connection connection = DBUtil.getConnection();
-         PreparedStatement ps = connection.prepareStatement(UPDATE_TASK_COLUMN)) {
-        
-        ps.setInt(1, newColumnId);
-        ps.setInt(2, taskId);
-        
-        int rowsAffected = ps.executeUpdate();
-        if (rowsAffected > 0) {
-            Task updatedTask = selectTaskWithGroupsById(taskId);
-            return updatedTask;
-        } else {
+
+        try (Connection connection = DBUtil.getConnection();
+                PreparedStatement ps = connection.prepareStatement(UPDATE_TASK_COLUMN)) {
+
+            ps.setInt(1, newColumnId);
+            ps.setInt(2, taskId);
+
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                Task updatedTask = selectTaskWithGroupsById(taskId);
+                return updatedTask;
+            } else {
+                return null;
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al actualizar la columna de la tarea en la DB: " + e.getMessage());
             return null;
         }
-        
-    } catch (SQLException e) {
-        System.err.println("Error al actualizar la columna de la tarea en la DB: " + e.getMessage());
-        return null;
     }
-}
+
+    public List<User> selectUsersByTaskId(int taskId) throws Exception {
+        List<User> users = new ArrayList<>();
+        try (Connection connection = DBUtil.getConnection();
+                PreparedStatement ps = connection.prepareStatement(SELECT_USERS_BY_TASK)) {
+            ps.setInt(1, taskId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    User u = new User();
+                    u.setIdUsuario(rs.getInt("id_usuario"));
+                    u.setNombre(rs.getString("nombre"));
+                    // u.setCorreo(rs.getString("correo"));
+                    users.add(u);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
+
+    // 2. Obtener las subtareas de una tarea (Recursivo)
+    // Nota: Usamos BASE_SELECT para que cada subtarea también tenga sus nombres de
+    // prioridad, columna, etc.
+    public List<Task> selectSubtasksByParentId(int parentTaskId) throws Exception {
+        List<Task> subtasks = new ArrayList<>();
+        String query = BASE_SELECT + " WHERE t.id_tarea_padre = ?";
+        try (Connection connection = DBUtil.getConnection();
+                PreparedStatement ps = connection.prepareStatement(query)) {
+            ps.setInt(1, parentTaskId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Task sub = RowToTask(rs);
+                    // Opcional: Si quieres que las subtareas también muestren sus usuarios en el
+                    // diálogo
+                    sub.setUsuariosAsignados(selectUsersByTaskId(sub.getIdTarea()));
+                    subtasks.add(sub);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return subtasks;
+    }
 }

@@ -145,4 +145,23 @@ public class TaskServerHandler {
             return new Response(false, "Error interno del servidor al crear tarea.");
         }
     }
+
+    public Response handleGetTaskById(int taskId) {
+        try {
+            Task task = taskDAO.selectTaskWithGroupsById(taskId);
+            if (task != null) {
+                task.setUsuariosAsignados(taskDAO.selectUsersByTaskId(taskId));
+                task.setSubtareas(taskDAO.selectSubtasksByParentId(taskId));
+
+                Response r = new Response(true, "Tarea cargada exitosamente.");
+                r.setData(task);
+                return r;
+            } else {
+                return new Response(false, "No se encontró la tarea con el ID especificado.");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return new Response(false, "Error interno al cargar tarea: " + ex.getMessage());
+        }
+    }
 }

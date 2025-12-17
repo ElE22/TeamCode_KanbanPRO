@@ -11,6 +11,11 @@ import com.mycompany.teamcode_kanbanpro.view.CreateTaskDialog;
 import com.mycompany.teamcode_kanbanpro.view.KanbanBoardView;
 import com.mycompany.teamcode_kanbanpro.view.KanbanTaskPanel;
 import com.mycompany.teamcode_kanbanpro.view.KanbanColumnPanel;
+import com.mycompany.teamcode_kanbanpro.view.TaskEditDialog;
+ import com.mycompany.teamcode_kanbanpro.model.Comment;
+import java.sql.Timestamp;
+
+import java.awt.event.MouseAdapter;
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -19,6 +24,7 @@ import java.util.Map;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import java.awt.event.MouseEvent;
 
 /**
  *
@@ -34,7 +40,8 @@ public class KanbanBoardController {
     private final String currentSprintName;
     private PermissionManager permission;
 
-    public KanbanBoardController( ClientConnector connector, int sprintId, int pId, String pNombre, String sNombre, PermissionManager permission) {
+    public KanbanBoardController(ClientConnector connector, int sprintId, int pId, String pNombre, String sNombre,
+            PermissionManager permission) {
         this.view = new KanbanBoardView();
         this.connector = connector;
         this.currentSprintId = sprintId;
@@ -43,31 +50,32 @@ public class KanbanBoardController {
         this.currentSprintName = sNombre;
         this.permission = permission;
         view.setController(this);
-        
+
         this.connector.setKanbanController(this);
         loadKanbanBoard();
         attachListeners();
         this.view.setIconImage(ImageLoader.loadImage());
         view.setTitle("Pizarra Kanban - Proyecto: " + currentProjectName + " | Sprint: " + currentSprintName);
-        view.setTitleLabel("Proyecto (" + currentProjectName + ") | Sprint (" + currentSprintName + ")  [Usuario: " + connector.getUserName() + "]");
+        view.setTitleLabel("Proyecto (" + currentProjectName + ") | Sprint (" + currentSprintName + ")  [Usuario: "
+                + connector.getUserName() + "]");
         this.view.setVisible(true);
     }
-    
+
     private void loadKanbanBoard() {
-        loadColumns(); 
+        loadColumns();
         loadTasks();
     }
-    
+
     private void attachListeners() {
-        if(permission.isScrumOrProduct()){
-             view.getCreateTaskButton().addActionListener(e -> handleNewTask());
+        if (permission.isScrumOrProduct()) {
+            view.getCreateTaskButton().addActionListener(e -> handleNewTask());
         } else {
             view.getTopPanel().remove(view.getCreateTaskButton());
             view.getTopPanel().revalidate();
             view.getTopPanel().repaint();
         }
     }
-    
+
     private void loadColumns() {
         try {
             Request req = new Request();
@@ -76,33 +84,44 @@ public class KanbanBoardController {
             payload.put("projectId", currentProjectId);
             req.setPayload(payload);
             Response resp = connector.sendRequest(req);
-            
-            
+
             if (resp.isSuccess()) {
                 @SuppressWarnings("unchecked")
-                List<Column> columnsServer = (List<Column>) resp.getData(); 
-              
+                List<Column> columnsServer = (List<Column>) resp.getData();
+
                 if (columnsServer == null || columnsServer.isEmpty()) {
-                    JOptionPane.showMessageDialog(view, "No se encontraron columnas para el sprint.", "Advertencia", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(view, "No se encontraron columnas para el sprint.", "Advertencia",
+                            JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                 // setup de las columnas que va ocupar el boardPanel
+                // setup de las columnas que va ocupar el boardPanel
                 view.setLayoutBoard(columnsServer.size());
-               
+
                 for (Column columnData : columnsServer) {
-                    KanbanColumnPanel columnPanel = new KanbanColumnPanel(columnData, view); 
-                    view.addColumns(columnPanel); 
+                    KanbanColumnPanel columnPanel = new KanbanColumnPanel(columnData, view);
+                    view.addColumns(columnPanel);
                 }
-                
+
             } else {
-                JOptionPane.showMessageDialog(view, "Error de servidor al cargar columnas: " + resp.getMessage(), "Error de Servidor", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(view, "Error de servidor al cargar columnas: " + resp.getMessage(),
+                        "Error de Servidor", JOptionPane.ERROR_MESSAGE);
             }
-            
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(view, "Error de conexión al cargar las columnas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(view, "Error de conexión al cargar las columnas: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
- 
+
+    private final MouseAdapter taskClickListener(Task taskData) {
+        return new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                showDetails(taskData);
+            }
+        };
+    }
+
     private void loadTasks() {
         try {
             Request req = new Request();
@@ -110,27 +129,33 @@ public class KanbanBoardController {
             Map<String, Object> payload = new HashMap<>();
             payload.put("sprintId", currentSprintId);
             req.setPayload(payload);
-            
+
             Response resp = connector.sendRequest(req);
             if (resp.isSuccess()) {
                 @SuppressWarnings("unchecked")
                 List<Task> tasks = (List<Task>) resp.getData();
 
-                if (tasks == null || tasks.isEmpty()) { return; }
+                if (tasks == null || tasks.isEmpty()) {
+                    return;
+                }
                 for (Task taskData : tasks) {
-                    KanbanTaskPanel taskPanel = new KanbanTaskPanel(
-                        taskData, // Pasamos el objeto Task completo
-                        view
-                    );
-                    
-                    // Encontrar la columna destino en la vista 
+                    KanbanTaskPanel taskPanel = new KanbanTaskPanel(taskData, view);
+
+                    taskPanel.addMouseListener(taskClickListener(taskData));
+                    taskPanel.getDescArea().addMouseListener(taskClickListener(taskData));
+
+                    // Encontrar la columna destino en la vista
                     KanbanColumnPanel targetColumn = view.findColumnByName(taskData.getNombreColumna());
-                    
+
                     if (targetColumn != null) {
                         targetColumn.addTask(taskPanel);
                     } else {
-                       // System.err.println("Advertencia: Columna '" + taskData.getNombreColumna() + "' no encontrada para la tarea " + taskData.getTitulo());
-                        JOptionPane.showMessageDialog(view, "Advertencia: Columna '" + taskData.getNombreColumna() + "' no encontrada para la tarea " + taskData.getTitulo(),
+                        // System.err.println("Advertencia: Columna '" + taskData.getNombreColumna() +
+                        // "' no encontrada para la tarea " + taskData.getTitulo());
+                        JOptionPane.showMessageDialog(view,
+                                "Advertencia: Columna '" + taskData.getNombreColumna()
+                                        + "' no encontrada para la tarea "
+                                        + taskData.getTitulo(),
                                 "Advertencia", JOptionPane.WARNING_MESSAGE);
                     }
                 }
@@ -138,13 +163,26 @@ public class KanbanBoardController {
                 view.repaint();
 
             } else {
-                JOptionPane.showMessageDialog(view, "Error de servidor al cargar tareas: " + resp.getMessage(), "Error de Servidor", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(view, "Error de servidor al cargar tareas: " + resp.getMessage(),
+                        "Error de Servidor", JOptionPane.ERROR_MESSAGE);
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(view, "Error de conexión al cargar las tareas: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(view, "Error de conexión al cargar las tareas: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void showDetails(Task taskData) {
+       try {
+            new TaskEditController(this.connector, view, taskData.getIdTarea());
+         
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(view, "Error al abrir detalles de la tarea: " + e.getMessage(), "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+
+}
 
     public void hanlderIncomingTaskUpdatedNotification(Response resp) {
         // Implementar si es necesario

@@ -33,6 +33,7 @@ public class ClientHandler implements Runnable {
     private final TaskServerHandler taskHandler;
     private final PriorityServerHandler priorityHandler;
     private final GrupoServerHandler grupoHandler;
+    private final CommentServerHandler commentHandler;
     
 
     public ClientHandler(Socket socket, Server server) {
@@ -47,6 +48,7 @@ public class ClientHandler implements Runnable {
         TaskDAO taskDAO = new TaskDAO();
         PriorityDAO priorityDAO = new PriorityDAO();
         GroupDAO groupDAO = new GroupDAO();
+        CommentDAO commentDAO= new CommentDAO();
         
         // inicializar handlers
         this.userHandler = new UserServerHandler(userDAO, roleDAO);
@@ -57,6 +59,7 @@ public class ClientHandler implements Runnable {
         this.taskHandler = new TaskServerHandler(taskDAO, priorityDAO, sprintDAO);
         this.priorityHandler = new PriorityServerHandler(priorityDAO);
         this.grupoHandler = new GrupoServerHandler(groupDAO, userDAO);
+        this.commentHandler = new CommentServerHandler(commentDAO);
     }
 
     @Override
@@ -235,6 +238,9 @@ public class ClientHandler implements Runnable {
                 return columnHandler.handleGetColumns(getIntParam(payload, "projectId"));
 
             // tasks
+            case "gettaskbyid":
+                return taskHandler.handleGetTaskById(getIntParam(payload, "idTarea"));
+
             case "gettasksbysprint":
                 return taskHandler.handleGeTasksBySprintId(getIntParam(payload, "sprintId"));
             case "createtask":
@@ -274,6 +280,10 @@ public class ClientHandler implements Runnable {
             //prioridades
             case "getpriorityidbyname":
                 return priorityHandler.handleGetPriorityByName(req);
+                
+           //comentarios
+            case "getcommentsbytask":
+                return commentHandler.handleGetCommentsByTask(getIntParam(payload, "idTarea"));
 
             default:
                 LOGGER.warning("accion no soportada: " + action);
