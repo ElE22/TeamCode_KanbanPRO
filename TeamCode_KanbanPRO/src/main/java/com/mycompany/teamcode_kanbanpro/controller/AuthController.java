@@ -10,8 +10,12 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 import com.mycompany.teamcode_kanbanpro.view.LoginScreen;
 import com.mycompany.teamcode_kanbanpro.view.RegisterUserView;
+
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 /**
  *
  * @author Emanuel
@@ -45,7 +49,39 @@ public class AuthController {
                 authenticateUser(); 
             }
         });
+
+         // Detector de Caps Lock en el campo de contraseña
+        this.loginView.passField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                checkCapsLock(e);
+            }
+            
+            @Override
+            public void keyReleased(KeyEvent e) {
+                checkCapsLock(e);
+            }
+        });
     }
+
+    private void checkCapsLock(KeyEvent e) {
+        // Verificar si Caps Lock esta activado
+        boolean capsLockOn = false;
+        try {
+            capsLockOn = Toolkit.getDefaultToolkit().getLockingKeyState(KeyEvent.VK_CAPS_LOCK);
+        } catch (UnsupportedOperationException ex) {
+            ex.printStackTrace();
+        }
+        
+        boolean shiftPressed = e.isShiftDown();
+        char c = e.getKeyChar();
+        boolean isUpperCase = Character.isLetter(c) && Character.isUpperCase(c);
+        
+        // Mostrar advertencia si Caps Lock esta activado o si Shift esta presionado y se escribe una letra mayuscula
+        boolean showWarning = capsLockOn || (shiftPressed && Character.isLetter(c)) || isUpperCase;
+        loginView.capsLockLabel.setVisible(showWarning);
+    }
+
 
     private void authenticateUser(){
         String user = loginView.userField.getText().trim();

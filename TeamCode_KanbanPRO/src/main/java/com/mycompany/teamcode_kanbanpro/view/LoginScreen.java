@@ -1,10 +1,5 @@
 package com.mycompany.teamcode_kanbanpro.view;
 
-/**
- *
- * @author diana
- */
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -24,11 +19,12 @@ public class LoginScreen extends JFrame {
     public JButton registerButton;
     public JTextField userField;
     public JPasswordField passField;
+    public JLabel capsLockLabel; // Nuevo label para el aviso
 
     public LoginScreen() {
         setTitle("Iniciar Sesión - KanbanPro");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 250);
+        setSize(400, 280); // Aumentado un poco el tamaño
         setLocationRelativeTo(null); 
 
         // Panel principal con margen
@@ -71,13 +67,23 @@ public class LoginScreen extends JFrame {
         gbc.gridy = 2;
         panel.add(passField, gbc);
 
+        // Label para aviso de Caps Lock
+        capsLockLabel = new JLabel("Mayúsculas activadas");
+        capsLockLabel.setForeground(Color.decode("#FF9800")); // Color naranja
+        capsLockLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        capsLockLabel.setVisible(false); // Oculto por defecto
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        gbc.gridwidth = 1;
+        panel.add(capsLockLabel, gbc);
+
         // Boton
         loginButton = new JButton("Iniciar Sesión");
         loginButton.setBackground(new Color(66, 133, 244)); 
         loginButton.setForeground(Color.WHITE);
         loginButton.setFocusPainted(false);
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 4;
         gbc.gridwidth = 2;
         panel.add(loginButton, gbc);
         
@@ -87,7 +93,7 @@ public class LoginScreen extends JFrame {
         registerButton.setForeground(Color.WHITE);
         registerButton.setFocusPainted(false);
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.gridwidth = 2;
         panel.add(registerButton, gbc);
         add(panel);
