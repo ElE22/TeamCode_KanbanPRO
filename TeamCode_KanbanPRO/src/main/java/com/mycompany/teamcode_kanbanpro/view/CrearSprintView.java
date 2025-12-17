@@ -7,11 +7,11 @@ package com.mycompany.teamcode_kanbanpro.view;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.time.ZoneId;
+import java.util.Date;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
+import com.toedter.calendar.JDateChooser;
 
 /**
  * @author salaz
@@ -25,16 +25,23 @@ public class CrearSprintView extends JFrame {
     private JLabel lblDescripcion;
 
     private JTextField txtNombre;
-    private JTextField txtFechaInicio;
-    private JTextField txtFechaFin;
+    private JDateChooser dateChooserInicio;
+    private JDateChooser dateChooserFin;
     private JTextArea txtDescripcion;
     private JButton btnGuardar;
     private JButton btnCancelar;
     private JPanel panelSprint;
 
+    // Colores del tema
+    private final Color BACKGROUND_COLOR = new Color(240, 248, 255);
+    private final Color CARD_COLOR = Color.WHITE;
+    private final Color INPUT_BG = new Color(249, 249, 249);
+    private final Color PRIMARY_COLOR = new Color(25, 118, 210);
+    private final Color BORDER_COLOR = new Color(200, 200, 200);
+
     public CrearSprintView() {
         setTitle("Crear Nuevo Sprint");
-        setSize(500, 450);
+        setSize(500, 480);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -45,22 +52,22 @@ public class CrearSprintView extends JFrame {
 
     private void initComponentes() {
         panelSprint = new JPanel();
-        panelSprint.setBackground(new Color(240, 248, 255));
+        panelSprint.setBackground(BACKGROUND_COLOR);
         panelSprint.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
         panelSprint.setLayout(new BorderLayout(10, 10));
 
         //TÍTULO
         lblTituloCuadro = new JLabel("Crear Nuevo Sprint", SwingConstants.CENTER);
-        lblTituloCuadro.setForeground(new Color(25, 118, 210));
+        lblTituloCuadro.setForeground(PRIMARY_COLOR);
         lblTituloCuadro.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTituloCuadro.setBorder(BorderFactory.createEmptyBorder(5, 0, 15, 0));
         panelSprint.add(lblTituloCuadro, BorderLayout.NORTH);
 
         //PANEL DE FORMULARIO
         JPanel panelFormulario = new JPanel(new GridBagLayout());
-        panelFormulario.setBackground(Color.WHITE);
+        panelFormulario.setBackground(CARD_COLOR);
         panelFormulario.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(new Color(200, 200, 200), 1, true),
+                new LineBorder(BORDER_COLOR, 1, true),
                 BorderFactory.createEmptyBorder(20, 20, 20, 20)
         ));
 
@@ -79,6 +86,11 @@ public class CrearSprintView extends JFrame {
         txtNombre = new JTextField(20);
         txtNombre.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txtNombre.setToolTipText("Ingrese un nombre descriptivo para el sprint (ej: Sprint 1 - Login)");
+        txtNombre.setBackground(INPUT_BG);
+        txtNombre.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(BORDER_COLOR, 1),
+            BorderFactory.createEmptyBorder(5, 10, 5, 10)
+        ));
         gbc.gridx = 1;
         gbc.gridy = 0;
         gbc.weightx = 1;
@@ -91,13 +103,19 @@ public class CrearSprintView extends JFrame {
         gbc.weightx = 0;
         panelFormulario.add(lblFechaInicio, gbc);
 
-        txtFechaInicio = new JTextField(12);
-        txtFechaInicio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtFechaInicio.setToolTipText("Formato: YYYY-MM-DD (ejemplo: 2024-12-01)");
-        agregarPlaceholder(txtFechaInicio, "YYYY-MM-DD");
+        dateChooserInicio = new JDateChooser();
+        dateChooserInicio.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        dateChooserInicio.setDateFormatString("dd/MM/yyyy"); 
+        // dateChooserInicio.setDateFormatString("yyyy-MM-dd"); // para usar formato yyyy-MM-dd
+        dateChooserInicio.setMinSelectableDate(new Date()); 
+        dateChooserInicio.setBackground(INPUT_BG); 
+        dateChooserInicio.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        dateChooserInicio.setPreferredSize(new Dimension(200, 35));// 
+        dateChooserInicio.setToolTipText("Seleccione la fecha de inicio del sprint");
         gbc.gridx = 1;
         gbc.gridy = 1;
-        panelFormulario.add(txtFechaInicio, gbc);
+        panelFormulario.add(dateChooserInicio, gbc);
+
 
         lblFechaFin = new JLabel("Fecha de Fin: *");
         lblFechaFin.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -105,15 +123,19 @@ public class CrearSprintView extends JFrame {
         gbc.gridy = 2;
         panelFormulario.add(lblFechaFin, gbc);
 
-        txtFechaFin = new JTextField(12);
-        txtFechaFin.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        txtFechaFin.setToolTipText("Formato: YYYY-MM-DD (ejemplo: 2024-12-15)");
-        agregarPlaceholder(txtFechaFin, "YYYY-MM-DD");
+        dateChooserFin = new JDateChooser();
+        dateChooserFin.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        dateChooserFin.setDateFormatString("dd/MM/yyyy");
+        // dateChooserFin.setDateFormatString("yyyy-MM-dd"); // para usar formato yyyy-MM-dd
+        dateChooserFin.setMinSelectableDate(new Date()); 
+        dateChooserFin.setBackground(INPUT_BG);
+        dateChooserFin.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        dateChooserFin.setPreferredSize(new Dimension(200, 35));
+        dateChooserFin.setToolTipText("Seleccione la fecha de fin del sprint");
         gbc.gridx = 1;
         gbc.gridy = 2;
-        panelFormulario.add(txtFechaFin, gbc);
+        panelFormulario.add(dateChooserFin, gbc);
 
-        // ----- Nota sobre formato -----
         JLabel lblNota = new JLabel("* Campos obligatorios");
         lblNota.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         lblNota.setForeground(Color.GRAY);
@@ -121,11 +143,17 @@ public class CrearSprintView extends JFrame {
         gbc.gridy = 3;
         panelFormulario.add(lblNota, gbc);
 
-        // ----- Campo: Descripción -----
+        JLabel lblInfo = new JLabel("Duración mínima recomendada: 8 días");
+        lblInfo.setFont(new Font("Segoe UI", Font.ITALIC, 11));
+        lblInfo.setForeground(new Color(100, 100, 100));
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        panelFormulario.add(lblInfo, gbc);
+
         lblDescripcion = new JLabel("Descripción:");
         lblDescripcion.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.anchor = GridBagConstraints.NORTHWEST;
         panelFormulario.add(lblDescripcion, gbc);
 
@@ -134,34 +162,36 @@ public class CrearSprintView extends JFrame {
         txtDescripcion.setLineWrap(true);
         txtDescripcion.setWrapStyleWord(true);
         txtDescripcion.setToolTipText("Descripción opcional del sprint");
+        txtDescripcion.setBackground(INPUT_BG);
+        txtDescripcion.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JScrollPane scrollDescripcion = new JScrollPane(txtDescripcion);
-        scrollDescripcion.setBorder(new LineBorder(new Color(200, 200, 200), 1));
+        scrollDescripcion.setBorder(BorderFactory.createLineBorder(BORDER_COLOR, 1));
+        scrollDescripcion.setBackground(INPUT_BG);
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 5;
         gbc.anchor = GridBagConstraints.WEST;
         panelFormulario.add(scrollDescripcion, gbc);
 
         panelSprint.add(panelFormulario, BorderLayout.CENTER);
 
-        // ========== PANEL DE BOTONES ==========
+        // Botones
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
-        panelBotones.setBackground(new Color(240, 248, 255));
+        panelBotones.setBackground(BACKGROUND_COLOR);
 
         btnCancelar = new JButton("Cancelar");
         btnCancelar.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         btnCancelar.setPreferredSize(new Dimension(100, 35));
         btnCancelar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        // El ActionListener lo agrega el controlador
+        btnCancelar.setFocusPainted(false);
 
         btnGuardar = new JButton("Guardar Sprint");
-        btnGuardar.setBackground(new Color(25, 118, 210));
+        btnGuardar.setBackground(PRIMARY_COLOR);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setFont(new Font("Segoe UI", Font.BOLD, 14));
         btnGuardar.setFocusPainted(false);
         btnGuardar.setPreferredSize(new Dimension(140, 35));
         btnGuardar.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnGuardar.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
-        // El ActionListener lo agrega el controlador
+        btnGuardar.setBorderPainted(false);
 
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
@@ -171,54 +201,30 @@ public class CrearSprintView extends JFrame {
         add(panelSprint, BorderLayout.CENTER);
     }
 
-    //Establece las fechas por defecto: - Fecha inicio: Hoy - Fecha fin: Hoy +   
+    //Por defecto pone 15 dias de duracion al sprint
     private void establecerFechasPorDefecto() {
         LocalDate hoy = LocalDate.now();
-        LocalDate finSprint = hoy.plusDays(14); // Sprint típico de 2 semanas
+        LocalDate finSprint = hoy.plusDays(14); 
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        // convertir LocalDate a date para jdatechooser
+        Date fechaInicio = Date.from(hoy.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        Date fechaFin = Date.from(finSprint.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
-        txtFechaInicio.setText(hoy.format(formatter));
-        txtFechaFin.setText(finSprint.format(formatter));
-
-        // Cambiar color a negro porque ya tienen valor
-        txtFechaInicio.setForeground(Color.BLACK);
-        txtFechaFin.setForeground(Color.BLACK);
+        dateChooserInicio.setDate(fechaInicio);
+        dateChooserFin.setDate(fechaFin);
     }
 
-    //Agrega efecto de placeholder a un campo de texto
-    private void agregarPlaceholder(JTextField campo, String placeholder) {
-        campo.setForeground(Color.GRAY);
-
-        campo.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (campo.getText().equals(placeholder)) {
-                    campo.setText("");
-                    campo.setForeground(Color.BLACK);
-                }
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                if (campo.getText().isEmpty()) {
-                    campo.setText(placeholder);
-                    campo.setForeground(Color.GRAY);
-                }
-            }
-        });
-    }
-
+    
     public JTextField getTxtNombre() {
         return txtNombre;
     }
 
-    public JTextField getTxtFechaInicio() {
-        return txtFechaInicio;
+    public JDateChooser getDateChooserInicio() {
+        return dateChooserInicio;
     }
 
-    public JTextField getTxtFechaFin() {
-        return txtFechaFin;
+    public JDateChooser getDateChooserFin() {
+        return dateChooserFin;
     }
 
     public JTextArea getTxtDescripcion() {

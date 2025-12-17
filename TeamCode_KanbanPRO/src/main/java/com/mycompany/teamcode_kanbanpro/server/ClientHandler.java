@@ -261,7 +261,7 @@ public class ClientHandler implements Runnable {
                 if (resp.isSuccess()) {
                     Response notification = new Response(true, "tarea movida por otro usuario");
                     notification.setBroadcast(true);
-                    notification.setData(req.getPayload()); 
+                    notification.setData(resp.getData()); 
                     notification.setAction("taskmoved");
                     
                     try {

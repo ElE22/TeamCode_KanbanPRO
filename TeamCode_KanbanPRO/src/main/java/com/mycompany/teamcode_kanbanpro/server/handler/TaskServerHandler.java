@@ -50,10 +50,13 @@ public class TaskServerHandler {
             int taskId = (Integer) payload.get("idTarea");
             int newColumnId = (Integer) payload.get("idColumna");
 
-            boolean success = taskDAO.updateTaskColumn(taskId, newColumnId);
+            Task success = taskDAO.updateTaskColumn(taskId, newColumnId);
 
-            if (success) {
-                return new Response(true, "Tarea movida exitosamente.");
+            if (success != null) {
+                Response r = new Response(true, "Tarea movida exitosamente.");
+                r.setData(success);
+                return r;
+
             } else {
                 return new Response(false, "No se pudo actualizar la columna de la tarea (ID no encontrado o error en DB).");
             }

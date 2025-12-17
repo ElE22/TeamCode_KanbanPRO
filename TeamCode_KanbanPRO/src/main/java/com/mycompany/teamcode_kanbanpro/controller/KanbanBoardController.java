@@ -197,11 +197,32 @@ public class KanbanBoardController {
     public void handleIncomingTaskMovedNotification(Response resp) {
         try {
             // los datos de la tarea movida por otro usuario
-            @SuppressWarnings("unchecked")
-            Map<String, Object> data = (Map<String, Object>) resp.getData();
+            if(resp == null){
+                JOptionPane.showMessageDialog(view, "Respuesta nula recibida en la notificación de tarea movida", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
 
-            int taskId = (int) data.get("idTarea");
-            int newColumnId = (int) data.get("idColumna");
+            if(!(resp.getData() instanceof Task)){
+                JOptionPane.showMessageDialog(view, "Datos de tarea inválidos recibidos en la notificación de tarea movida", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Task taskData = (Task) resp.getData();
+            if (taskData == null) {
+                JOptionPane.showMessageDialog(view, "Datos de tarea nulos recibidos en la notificación de tarea movida", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            if(taskData.getIdSprint() != currentSprintId){
+                // La tarea no pertenece al sprint actual, ignorar
+                //JOptionPane.showMessageDialog(view, "La tarea movida no pertenece al sprint actual, ignorando notificación", "Información", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            int taskId = taskData.getIdTarea();
+            int newColumnId = taskData.getIdColumna();
+
+
+            
 
             //System.out.println("Broadcast recibido: tarea " + taskId + " movida a columna " + newColumnId);
 

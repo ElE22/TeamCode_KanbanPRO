@@ -354,7 +354,7 @@ public class TaskDAO {
 
     }
 
-    public boolean updateTaskColumn(int taskId, int newColumnId) throws Exception {
+    public Task updateTaskColumn(int taskId, int newColumnId) throws Exception {
     
     try (Connection connection = DBUtil.getConnection();
          PreparedStatement ps = connection.prepareStatement(UPDATE_TASK_COLUMN)) {
@@ -363,11 +363,16 @@ public class TaskDAO {
         ps.setInt(2, taskId);
         
         int rowsAffected = ps.executeUpdate();
-        return rowsAffected > 0;
+        if (rowsAffected > 0) {
+            Task updatedTask = selectTaskWithGroupsById(taskId);
+            return updatedTask;
+        } else {
+            return null;
+        }
         
     } catch (SQLException e) {
         System.err.println("Error al actualizar la columna de la tarea en la DB: " + e.getMessage());
-        return false;
+        return null;
     }
 }
 }

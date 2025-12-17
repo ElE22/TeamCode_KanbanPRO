@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
 /**
@@ -78,34 +79,40 @@ class ColumnTransferHandler extends TransferHandler {
     }
 
     //Mueve la tarea de una columna a otra
-    private boolean moveTask(KanbanTaskPanel taskPanel) {
-        // Verificar que la tarea no esté ya en esta columna
+   private boolean moveTask(KanbanTaskPanel taskPanel) {
+        KanbanColumnPanel sourceColumn = (KanbanColumnPanel) SwingUtilities.getAncestorOfClass(
+                KanbanColumnPanel.class, taskPanel
+        );
+
+        // Verificar que la tarea no esté ya en esta columna destino
         if (columnPanel.containsTask(taskPanel)) {
             return false;
         }
 
-        KanbanColumnPanel sourceColumn = taskPanel.getParentColumn();
-        Column newColumnData = this.columnPanel.getColumnData(); // Usar el getter
+        Column newColumnData = this.columnPanel.getColumnData();
         Task taskData = taskPanel.getTaskData();
 
-        // Remover de la columna origen
         if (sourceColumn != null) {
             sourceColumn.removeTask(taskPanel);
+            sourceColumn.revalidate();
+            sourceColumn.repaint();
         }
 
-        // Agregar a la columna destino
         columnPanel.addTask(taskPanel);
-
-        // Notificar al view sobre el movimiento
+        
         if (parentView != null) {
+            // Esto obliga a Swing a recalcular todas las posiciones y limpiar restos
+            parentView.getContentPane().revalidate();
+            parentView.getContentPane().repaint();
+
+            // Notificar al controller (tu lógica de reflexión actual)
             Object controller = parentView.getController();
             if (controller != null) {
                 try {
-                    // Try to invoke handleTaskMoved(Task, Column) if the controller defines it.
                     Method m = controller.getClass().getMethod("handleTaskMoved", Task.class, Column.class);
                     m.invoke(controller, taskData, newColumnData);
                 } catch (NoSuchMethodException e) {
-                    // Controller doesn't define handleTaskMoved(Task, Column); ignore.
+                    // Ignorar
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

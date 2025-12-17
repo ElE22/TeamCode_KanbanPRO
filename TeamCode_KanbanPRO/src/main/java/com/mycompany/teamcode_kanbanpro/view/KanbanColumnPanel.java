@@ -1,34 +1,32 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package com.mycompany.teamcode_kanbanpro.view;
 
 import com.mycompany.teamcode_kanbanpro.model.Column;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicScrollBarUI;
+
 import java.awt.*;
+
 /**
- *
  * @author Emanuel
  */
 public class KanbanColumnPanel extends JPanel {
     private final Column columnData;
     private final KanbanBoardView parentView;
-    
+    private JPanel tasksContainer;
+
     public KanbanColumnPanel(Column columnData, KanbanBoardView parentView) {
-        this.columnData = columnData; // Guardar el modelo
+        this.columnData = columnData;
         this.parentView = parentView;
+        
         initializePanel();
         createHeader();
+        setupTasksContainer();
         setupTransferHandler();
     }
-    
-    
-    
 
     private void initializePanel() {
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
         setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
         setBackground(new Color(250, 250, 250));
     }
@@ -40,122 +38,157 @@ public class KanbanColumnPanel extends JPanel {
         titleLabel.setBorder(new EmptyBorder(8, 5, 8, 5));
         titleLabel.setOpaque(true);
         titleLabel.setBackground(Color.decode(columnData.getColor()));
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titleLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 35));
+        titleLabel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 40));
         
-        add(titleLabel);
-        add(Box.createRigidArea(new Dimension(0, 8)));
-        setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
-        setBackground(new Color(250, 250, 250));
-        setTransferHandler(new ColumnTransferHandler(this, parentView));
-        add(Box.createVerticalGlue()); // Espacio flexible al final
+        // Agregar al norte del panel principal
+        add(titleLabel, BorderLayout.NORTH);
+    }
+
+    private void setupTasksContainer() {
+        // Este panel contendra las tareas y el Glue
+        tasksContainer = new JPanel();
+        tasksContainer.setLayout(new BoxLayout(tasksContainer, BoxLayout.Y_AXIS));
+        tasksContainer.setBackground(new Color(250, 250, 250));
+        tasksContainer.setBorder(new EmptyBorder(8, 5, 8, 5));
+
+        // El Glue inicial para empujar las tareas hacia arriba
+        tasksContainer.add(Box.createVerticalGlue());
+
+        // Configuramos el ScrollPane
+        JScrollPane scrollPane = new JScrollPane(tasksContainer);
+        scrollPane.setBorder(null); // Quitar borde
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
         
+        // Mejorar la velocidad del scroll con la rueda del ratón
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        scrollPane.getVerticalScrollBar().setBlockIncrement(30);
+
+        scrollPane.getVerticalScrollBar().setUI(new BasicScrollBarUI() {
+            @Override
+            protected void configureScrollBarColors() {
+                this.thumbColor = new Color(180, 180, 180);
+                this.trackColor = new Color(240, 240, 240);
+            }
+            
+            @Override
+            protected JButton createDecreaseButton(int orientation) {
+                return createZeroButton();
+            }
+            
+            @Override
+            protected JButton createIncreaseButton(int orientation) {
+                return createZeroButton();
+            }
+
+            @Override
+        protected Dimension getMinimumThumbSize() {
+            return new Dimension(0, 40); // No medirá menos de 40px de alto
+        }
+
+        @Override
+        protected Dimension getMaximumThumbSize() {
+            return new Dimension(0, 80); // No medirá más de 80px de alto (esto la hace pequeña)
+        }
+
+        @Override
+        protected void paintThumb(Graphics g, JComponent c, Rectangle thumbBounds) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(thumbColor);
+            // Dibujamos con bordes redondeados para estilo moderno
+            g2.fillRoundRect(thumbBounds.x, thumbBounds.y, thumbBounds.width, thumbBounds.height, 10, 10);
+            g2.dispose();
+        }
+            
+            private JButton createZeroButton() {
+                JButton button = new JButton();
+                button.setPreferredSize(new Dimension(0, 0));
+                return button;
+            }
+
+            
+        });
+        
+        // Hacer que la barra vertical siempre sea visible o aparezca segun se necesite
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        add(scrollPane, BorderLayout.CENTER);
     }
 
     private void setupTransferHandler() {
-        setTransferHandler(new ColumnTransferHandler(this, parentView));
+        tasksContainer.setTransferHandler(new ColumnTransferHandler(this, parentView));
     }
 
-    /**
-     * Agrega una tarea a la columna
-     */
     public void addTask(KanbanTaskPanel taskPanel) {
-        // Remover el glue temporal
-        Component glue = getComponent(getComponentCount() - 1);
-        remove(glue);
+        // El glue siempre es el ultimo componente en tasksContainer
+        Component glue = tasksContainer.getComponent(tasksContainer.getComponentCount() - 1);
+        tasksContainer.remove(glue);
         
-        // Agregar la tarea
         taskPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(Box.createRigidArea(new Dimension(0, 6)));
-        add(taskPanel);
         
-        // Volver a agregar el glue
-        add(glue);
+        // Espaciador entre tareas
+        tasksContainer.add(Box.createRigidArea(new Dimension(0, 8)));
+        tasksContainer.add(taskPanel);
         
-        revalidate();
-        repaint();
+        // Re-insertar el glue al final
+        tasksContainer.add(glue);
+        
+        tasksContainer.revalidate();
+        tasksContainer.repaint();
     }
 
     /**
-     * Remueve una tarea de la columna
+     * Remueve una tarea del contenedor interno
      */
     public void removeTask(KanbanTaskPanel taskPanel) {
-        Component[] components = getComponents();
-        int taskIndex = -1;
-        
-        // Buscar el indice de la tarea
-        for (int i = 0; i < components.length; i++) {
-            if (components[i] == taskPanel) {
-                taskIndex = i;
-                break;
-            }
-        }
-
-        if (taskIndex != -1) {
-            // Remover el espaciador antes de la tarea si existe
-            if (taskIndex > 0 && components[taskIndex - 1] instanceof Box.Filler) {
-                remove(taskIndex - 1);
-            }
-            // Remover la tarea
-            remove(taskPanel);
-            
-            revalidate();
-            repaint();
-        }
-    }
-
-    public Column getColumnData() {
-        return columnData;
-    }
-    public String getColumnName() {
-        return columnData.getNombre();
-    } 
-
-    //Verifica si una tarea ya está en esta columna
-    public boolean containsTask(KanbanTaskPanel taskPanel) {
-        return taskPanel.getParent() == this;
-    }
-
+    Component[] components = tasksContainer.getComponents();
+    int taskIndex = -1;
     
-    /**
-     * Remueve todas las tareas visuales de esta columna y reconstruye el header.
-     * Útil al recargar el tablero desde el modelo.
-     */
-    public void clearTasks() {
-        // eliminar todos los componentes y volver a crear el header
-        removeAll();
-        createHeader();
-        revalidate();
-        repaint();
+    for (int i = 0; i < components.length; i++) {
+        if (components[i] == taskPanel) {
+            taskIndex = i;
+            break;
+        }
     }
-    /**
-     * Busca y devuelve el KanbanTaskPanel con el id de tarea dado dentro de esta columna.
-     * Realiza una búsqueda recursiva por si existen contenedores intermedios o fillers.
-     *
-     * @param taskId id de la tarea a buscar
-     * @return KanbanTaskPanel si se encuentra, o null si no existe
-     */
+
+    if (taskIndex != -1) {
+        // Remover espaciador
+        if (taskIndex > 0 && components[taskIndex - 1] instanceof Box.Filler) {
+            tasksContainer.remove(taskIndex - 1);
+        }
+        tasksContainer.remove(taskPanel);
+        
+        // REFRESCAR AMBOS
+        tasksContainer.revalidate();
+        tasksContainer.repaint();
+        this.revalidate(); // Refresca el panel de la columna completa
+        this.repaint();
+    }
+}
+
+    public void clearTasks() {
+        tasksContainer.removeAll();
+        tasksContainer.add(Box.createVerticalGlue());
+        tasksContainer.revalidate();
+        tasksContainer.repaint();
+    }
+
     public KanbanTaskPanel getTaskPanel(int taskId) {
-        Component[] components = getComponents();
+        Component[] components = tasksContainer.getComponents();
         for (Component comp : components) {
             KanbanTaskPanel found = findTaskPanelRecursive(comp, taskId);
-            if (found != null) {
-                return found;
-            }
+            if (found != null) return found;
         }
         return null;
     }
 
-    // Helper recursivo para buscar KanbanTaskPanel dentro de un componente
     private KanbanTaskPanel findTaskPanelRecursive(Component comp, int taskId) {
         if (comp instanceof KanbanTaskPanel) {
             KanbanTaskPanel taskPanel = (KanbanTaskPanel) comp;
-            try {
-                if (taskPanel.getTaskData() != null && taskPanel.getTaskData().getIdTarea() == taskId) {
-                    return taskPanel;
-                }
-            } catch (Exception ignored) {
-                // En caso de que getTaskData lance excepción o no exista, continuar
+            if (taskPanel.getTaskData() != null && taskPanel.getTaskData().getIdTarea() == taskId) {
+                return taskPanel;
             }
             return null;
         }
@@ -167,7 +200,15 @@ public class KanbanColumnPanel extends JPanel {
                 if (found != null) return found;
             }
         }
-
         return null;
+    }
+
+    // Getters
+    public Column getColumnData() { return columnData; }
+    public String getColumnName() { return columnData.getNombre(); }
+    public JPanel getTasksContainer() { return tasksContainer; }
+
+    public boolean containsTask(KanbanTaskPanel taskPanel) {
+        return taskPanel.getParent() == tasksContainer;
     }
 }
