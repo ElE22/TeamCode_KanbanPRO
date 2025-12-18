@@ -38,7 +38,7 @@ public class ProyectosView extends JPanel {
 
     private void initComponentes() {
 
-        JLabel lblTitulo = new JLabel("Gestión de Proyectos (Scrum Master)", SwingConstants.CENTER);
+        JLabel lblTitulo = new JLabel("Gestión de Proyectos", SwingConstants.CENTER);
         lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
         lblTitulo.setForeground(new Color(25, 118, 210));
         add(lblTitulo, BorderLayout.NORTH);

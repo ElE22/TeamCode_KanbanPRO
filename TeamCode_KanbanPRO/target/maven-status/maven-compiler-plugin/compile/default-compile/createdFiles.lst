@@ -61,7 +61,6 @@ com\mycompany\teamcode_kanbanpro\controller\GroupController.class
 com\mycompany\teamcode_kanbanpro\server\Server.class
 com\mycompany\teamcode_kanbanpro\controller\ProyectosCardController$2.class
 com\mycompany\teamcode_kanbanpro\controller\RegisterUserController.class
-com\mycompany\teamcode_kanbanpro\view\CrearSprintView$1.class
 com\mycompany\teamcode_kanbanpro\view\KanbanColumnPanel.class
 com\mycompany\teamcode_kanbanpro\view\LoginScreen.class
 com\mycompany\teamcode_kanbanpro\model\User.class
