@@ -378,6 +378,7 @@ public class KanbanBoardController {
                     if (createdTaskFromServer != null) {
                         // Crear el panel visual de la tarea
                         KanbanTaskPanel taskPanel = new KanbanTaskPanel(createdTaskFromServer, view);
+                        taskPanel.addMouseListener(taskClickListener(createdTaskFromServer));
 
                         // Encontrar la columna destino y agregar la tarea
                         KanbanColumnPanel targetColumn = view.findColumnById(createdTaskFromServer.getIdColumna());
@@ -455,6 +456,7 @@ public class KanbanBoardController {
 
             // Crear el panel visual de la tarea
             KanbanTaskPanel taskPanel = new KanbanTaskPanel(newTask, view);
+            taskPanel.addMouseListener(taskClickListener(newTask));
 
             // Agregar la tarea a la columna destino
             targetColumn.addTask(taskPanel);
